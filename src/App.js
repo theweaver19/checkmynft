@@ -27,6 +27,14 @@ import eth from "./images/eth.png";
 import checkMyNFTImage from "./images/checkMyNFT.png";
 import { TwitterTweetEmbed } from "react-twitter-embed";
 
+
+
+// ARWEAVE example: 0x97F1482116F6459eD7156f1E4fC76b023C9b4BB3
+// IPFS example: 0xc6b0b290176aaab958441dcb0c64ad057cbc39a0
+// Poor from known poor example: 0x06012c8cf97bead5deae237070f9587f8e7a266d
+// Poor from centralized example: 0xBe065d51ef9aE7d4550942Fe9C4E948606260C6C
+
+
 const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
@@ -41,7 +49,7 @@ const useStyles = makeStyles((theme) =>
     loaderMedium: {
       backgroundColor: "rgba(196, 196, 196, 1)",
       "& .MuiLinearProgress-barColorPrimary": {
-        backgroundColor: "#16CA48",
+        backgroundColor: "#EDD820",
       },
     },
     loaderPoor: {
@@ -67,6 +75,8 @@ let knownPoor = [
 ];
 
 // Cryptopunks (store the info SHA256 of the image on the contract, image is not necessarily stored in a distributed fashion)
+
+// TODO check cryptopunks contract!
 let knownMedium = ["0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb".toLowerCase()];
 
 const levels = {
@@ -147,9 +157,6 @@ const arweave = Arweave.init();
 const web3 = new Web3(
   "wss://mainnet.infura.io/ws/v3/a30464df239144d0a8eae3f8a426d03e"
 );
-
-// ARWEAVE example: 0xc6b0B290176AaaB958441Dcb0c64ad057cBc39a0
-// IPFS example: 0x1dC30B7CBab6ab347D743E0b9FdeEcB553E1c986
 
 let ipfsEndpoint = "https://cloudflare-ipfs.com";
 let arweaveEndpoint = "https://arweave.net";
@@ -1101,7 +1108,7 @@ function App() {
           </Container>
         </div>
       ) : (
-        <Container style={{ height: "100vh" }}>
+        <Container style={{ height: "100%" }}>
           <Grid container spacing={1} direction="column" alignItems="center">
             <img
               src={checkMyNFT}
