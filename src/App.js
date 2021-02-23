@@ -272,13 +272,13 @@ function App() {
       tokenURI = await contract.methods.tokenURI(id).call();
     } catch (e) {
       error = e.message;
-    }
-    try {
-      // this is NOT proper ERC721 but Rarible has this
-      tokenURI = await contract.methods.uri(id).call();
-      error = "";
-    } catch (e) {
-      error = e.message;
+      try {
+        // this is NOT proper ERC721 but Rarible has this
+        tokenURI = await contract.methods.uri(id).call();
+        error = "";
+      } catch (e) {
+        error = e.message;
+      }
     }
     return [tokenURI, error];
   };
@@ -316,7 +316,10 @@ function App() {
       }
       const [tokenURI, err] = await tryToGetTokenURI(contract, tokenID);
       if (err !== "") {
+        console.error(err);
         setFetchError("Could not fetch token URI for NFT");
+        setIsLoading(false);
+        return;
       }
 
       let [uriURL, uriProtocol] = await getURLFromURI(tokenURI);
