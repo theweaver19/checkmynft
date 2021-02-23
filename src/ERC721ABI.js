@@ -169,6 +169,14 @@ export const ERC721ABI = [
     stateMutability: "view",
     type: "function",
   },
+  // Adding uri which is NOT ERC721 compatible but rarible uses this
+  {
+    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    name: "uri",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
   {
     inputs: [
       { internalType: "address", name: "from", type: "address" },

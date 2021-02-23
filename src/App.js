@@ -30,6 +30,7 @@ import { Alert } from "@material-ui/lab";
 
 // ARWEAVE example: 0x97F1482116F6459eD7156f1E4fC76b023C9b4BB3
 // IPFS example: 0xc6b0b290176aaab958441dcb0c64ad057cbc39a0
+// Rari Medium example: 0xd07dc4262bcdbf85190c01c996b4c06a461d2430 with tokenURI: 140082
 // Poor from known poor example: 0x06012c8cf97bead5deae237070f9587f8e7a266d
 // Poor from centralized example: 0xBe065d51ef9aE7d4550942Fe9C4E948606260C6C
 // Poor from centralized example: 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 with tokenURI: 22000042
@@ -186,6 +187,10 @@ const getURLFromURI = async (uri) => {
       return [ipfsEndpoint + cleaned, "ipfs"];
     }
 
+    if (url.pathname.includes("ipfs") || url.pathname.includes("Qm")) {
+      return [url.href, "ipfs"];
+    }
+
     // otherwise we check if arweave (arweave in the name or arweave.net)
     if (url.hostname === "arweave.net") {
       return [arweaveEndpoint + url.pathname, "arweave"];
@@ -259,12 +264,38 @@ function App() {
     setErrors({ ...errors, tokenID: "" });
   };
 
+  const tryToGetTokenURI = async (contract, id) => {
+    let tokenURI = "";
+    let error = "";
+    try {
+      // this is proper ERC721 compatible
+      tokenURI = await contract.methods.tokenURI(id).call();
+    } catch (e) {
+      error = e.message;
+    }
+    try {
+      // this is NOT proper ERC721 but Rarible has this
+      tokenURI = await contract.methods.uri(id).call();
+      error = "";
+    } catch (e) {
+      error = e.message;
+    }
+    return [tokenURI, error];
+  };
+
   const handleClick = async () => {
     setIsLoading(true);
     try {
       const contract = new web3.eth.Contract(ERC721ABI, nftAddress);
 
-      const owner = await contract.methods.ownerOf(tokenID).call();
+      let owner = "";
+      try {
+        // this is proper ERC721 compatible
+        owner = await contract.methods.ownerOf(tokenID).call();
+      } catch (e) {
+        console.error(e);
+      }
+
       const symbol = await contract.methods.symbol().call();
       const name = await contract.methods.name().call();
 
@@ -283,16 +314,10 @@ function App() {
         });
         setImageInfo(defaultImgState);
       }
-
-      let tokenURI = "";
-      // not all of these HAVE token URIs
-      try {
-        tokenURI = await contract.methods.tokenURI(tokenID).call();
-      } catch (e) {
-        console.error();
-        // if we can't get the URI at this point, it's an undefined???
-        setFetchError(e.message);
-        return;
+      console.log("here");
+      const [tokenURI, err] = await tryToGetTokenURI(contract, tokenID);
+      if (err !== "") {
+        setFetchError("Could not fetch token URI for NFT");
       }
 
       let [uriURL, uriProtocol] = await getURLFromURI(tokenURI);
@@ -1311,7 +1336,7 @@ function App() {
             >
               <IconButton
                 onClick={() => {
-                  window.open("github.com");
+                  window.open("https://github.com/theweaver19/checkmynft");
                 }}
               >
                 <img src={github} alt="github" />
