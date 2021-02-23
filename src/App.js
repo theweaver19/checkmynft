@@ -314,7 +314,6 @@ function App() {
         });
         setImageInfo(defaultImgState);
       }
-      console.log("here");
       const [tokenURI, err] = await tryToGetTokenURI(contract, tokenID);
       if (err !== "") {
         setFetchError("Could not fetch token URI for NFT");
