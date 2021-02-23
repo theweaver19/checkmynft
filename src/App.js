@@ -130,9 +130,9 @@ const levels = {
       <div>
         This asset is either stored on a centralized provider or there might not
         be a link between your NFT and the asset on chain. 💔 😬 Your asset is
-        at great risk of loss if the provider goes out of business or if the
-        issuer stops payment to the storage provider or the link between your
-        NFT and its assets is broken (for example, if the link is stored on a
+        at great risk of loss if the provider goes out of business, if the
+        issuer stops payment to the storage provider or if the link between your
+        NFT and the assets breaks (for example, if the link is stored on a
         centralized website).
         <br />
         <br />
@@ -395,12 +395,12 @@ function App() {
       className="App"
       style={{
         backgroundColor: "#D8F6FF",
-        height: "100%",
+        // height: "100%",
       }}
     >
       {!nftInfo.level ? (
         <React.Fragment>
-          <Container style={{ height: "80vh" }}>
+          <Container>
             <Grid
               container
               spacing={3}
@@ -417,7 +417,7 @@ function App() {
               />
               <Grid item>
                 <Grid container>
-                  <Grid item xs={12}>
+                  <Grid item>
                     <div
                       style={{
                         color: "#9856EC",
@@ -466,6 +466,7 @@ function App() {
                     padding: "20px 40px 40px 40px",
                     width: "100%",
                     borderRadius: "20px",
+                    marginBottom: "40px",
                   }}
                 >
                   <div
@@ -567,7 +568,6 @@ function App() {
           <Container
             style={{
               backgroundColor: "rgba(255, 254, 160, 1)",
-              width: "100vw",
               maxWidth: "100%",
             }}
           >
@@ -643,7 +643,6 @@ function App() {
           <Container
             style={{
               backgroundColor: "#E8D7FF",
-              width: "100vw",
               maxWidth: "100%",
             }}
           >
@@ -1183,7 +1182,6 @@ function App() {
           </Container>
           <Container
             style={{
-              height: "43vh",
               backgroundColor: "#D5FFC6",
               maxWidth: "100%",
             }}
@@ -1229,6 +1227,7 @@ function App() {
                     padding: "20px",
                     width: "100%",
                     borderRadius: "20px",
+                    marginBottom: "40px",
                   }}
                 >
                   <div
@@ -1326,7 +1325,6 @@ function App() {
           </Container>
           <Container
             style={{
-              height: "10vh",
               backgroundColor: "#D8F6FF",
             }}
           >
@@ -1419,7 +1417,7 @@ function App() {
                           : imageInfo.image
                       }
                       alt="NFT"
-                      style={{ maxWidth: "244px", maxHeight: "285px" }}
+                      style={{ width: "244px", height: "285px" }}
                     />
                   </Grid>
                 </Grid>
