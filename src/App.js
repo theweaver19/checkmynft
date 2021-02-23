@@ -292,7 +292,7 @@ function App() {
         console.error();
         // if we can't get the URI at this point, it's an undefined???
         setFetchError(e.message);
-        return
+        return;
       }
 
       let [uriURL, uriProtocol] = await getURLFromURI(tokenURI);
@@ -685,9 +685,9 @@ function App() {
                       fontSize: "14px",
                     }}
                   >
-                    CheckMyNFT rates your NFT asset storage based on the storage
-                    provider used and whether the asset is linked directly to
-                    the ERC-721 token. <br />
+                    CheckMyNFT rates your NFT asset storage based on the
+                    reliability of the provider used and whether the asset is
+                    linked directly to the ERC-721 token. <br />
                     <br />
                     Centralized providers such as AWS S3, Dropbox and Google
                     Drive are considered the least diserable as there is a risk
