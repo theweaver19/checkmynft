@@ -26,14 +26,13 @@ import twitter from "./images/twitter.png";
 import eth from "./images/eth.png";
 import checkMyNFTImage from "./images/checkMyNFT.png";
 import { TwitterTweetEmbed } from "react-twitter-embed";
-
-
+import { Alert } from "@material-ui/lab";
 
 // ARWEAVE example: 0x97F1482116F6459eD7156f1E4fC76b023C9b4BB3
 // IPFS example: 0xc6b0b290176aaab958441dcb0c64ad057cbc39a0
 // Poor from known poor example: 0x06012c8cf97bead5deae237070f9587f8e7a266d
 // Poor from centralized example: 0xBe065d51ef9aE7d4550942Fe9C4E948606260C6C
-
+// Poor from centralized example: 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 with tokenURI: 22000042
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -77,7 +76,9 @@ let knownPoor = [
 // Cryptopunks (store the info SHA256 of the image on the contract, image is not necessarily stored in a distributed fashion)
 
 // TODO check cryptopunks contract!
-let knownMedium = ["0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb".toLowerCase()];
+// let knownMedium = ["0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb".toLowerCase()];
+
+// TODO error Alert
 
 const levels = {
   strong: {
@@ -126,13 +127,16 @@ const levels = {
     level: 10,
     text: (
       <div>
-        This asset is stored on centralized provider. 💔 😬 Your asset is at
-        great risk of loss if the provider goes out of business or if the issuer
-        stops payment to the storage provider.
+        This asset is either stored on a centralized provider or there might not
+        be a link between your NFT and the asset on chain. 💔 😬 Your asset is
+        at great risk of loss if the provider goes out of business or if the
+        issuer stops payment to the storage provider or the link between your
+        NFT and its assets is broken (for example, if the link is stored on a
+        centralized website).
         <br />
         <br />
         Ask your NFT issuer to consider decentralized storage options such as
-        IPFS, Sia or even better, Arweave for a permanent storage solution. 💪
+        IPFS or even better, Arweave for a permanent storage solution. 💪
       </div>
     ),
   },
@@ -162,7 +166,7 @@ let ipfsEndpoint = "https://cloudflare-ipfs.com";
 let arweaveEndpoint = "https://arweave.net";
 
 const isIPFSHash = (hash) => {
-  if (hash.substring(0, 2) == "Qm") {
+  if (hash.substring(0, 2) === "Qm") {
     return true;
   }
   return false;
@@ -207,6 +211,11 @@ const getURLFromURI = async (uri) => {
   }
 };
 
+let defaultImgState = {
+  imageURIURL: "",
+  image: checkMyNFTImage,
+  loading: false,
+};
 function App() {
   const classes = useStyles();
   const [nftInfo, setNFTInfo] = useState({
@@ -214,13 +223,13 @@ function App() {
     tokenURI: "",
     symbol: "",
     name: "",
-    image: "",
     address: "",
     tokenID: "",
     protocol: "",
     uriURL: "",
-    imageURIURL: "",
   });
+
+  const [imageInfo, setImageInfo] = useState(defaultImgState);
   const [errors, setErrors] = useState({
     nftAddress: "",
     tokenID: "",
@@ -231,6 +240,8 @@ function App() {
   });
   const [nftAddress, setNFTAddress] = useState("");
   const [tokenID, setTokenID] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState("");
 
   const validateAddress = (address) => {
     if (address.length === 40 || address.length === 42) {
@@ -249,6 +260,7 @@ function App() {
   };
 
   const handleClick = async () => {
+    setIsLoading(true);
     try {
       const contract = new web3.eth.Contract(ERC721ABI, nftAddress);
 
@@ -264,13 +276,12 @@ function App() {
           tokenURI: "N/A",
           symbol,
           name,
-          image: checkMyNFTImage,
           address: nftAddress,
           tokenID: tokenID,
           protocol: "N/A",
           uriURL: "N/A",
-          imageURIURL: "N/A",
         });
+        setImageInfo(defaultImgState);
       }
 
       let tokenURI = "";
@@ -280,6 +291,8 @@ function App() {
       } catch (e) {
         console.error();
         // if we can't get the URI at this point, it's an undefined???
+        setFetchError(e.message);
+        return
       }
 
       let [uriURL, uriProtocol] = await getURLFromURI(tokenURI);
@@ -290,12 +303,19 @@ function App() {
       let imgURI = uriInfo.image;
 
       let [imageURIURL] = await getURLFromURI(imgURI);
+      setImageInfo({ ...imageInfo, loading: true });
 
-      const imageResponse = await fetch(imageURIURL, { method: "GET" });
-      let imageBlob = await imageResponse.blob();
-      let image = URL.createObjectURL(imageBlob);
+      fetch(imageURIURL, { method: "GET" }).then(async (imageResponse) => {
+        let imageBlob = await imageResponse.blob();
+        let image = URL.createObjectURL(imageBlob);
+        setImageInfo({
+          imageURIURL: imageURIURL,
+          image: image,
+          loading: false,
+        });
+      });
 
-      let severity = undefined;
+      let severity = "undefined";
       switch (uriProtocol) {
         case "ipfs":
           severity = "medium";
@@ -306,6 +326,8 @@ function App() {
         case "centralized":
           severity = "poor";
           break;
+        default:
+          severity = "undefined";
       }
 
       setNFTInfo({
@@ -314,15 +336,16 @@ function App() {
         tokenURI,
         symbol,
         name,
-        image,
         address: nftAddress,
         tokenID: tokenID,
         protocol: uriProtocol,
         uriURL,
-        imageURIURL,
       });
+      setIsLoading(false);
     } catch (e) {
       console.error(e);
+      setFetchError(e.message);
+      setIsLoading(false);
     }
   };
 
@@ -334,6 +357,7 @@ function App() {
       errors.tokenID !== ""
     );
   };
+
   return (
     <div
       className="App"
@@ -343,7 +367,7 @@ function App() {
         width: "100vw",
       }}
     >
-      {!nftInfo.image ? (
+      {!nftInfo.level ? (
         <div>
           <Container style={{ height: "80vh", width: "100vw" }}>
             <Grid
@@ -386,7 +410,7 @@ function App() {
                       Don’t let your NFT become a{" "}
                       <span style={{ color: "#FF6161" }}>
                         {"{placeholder}"}
-                        <img src={"https://nowhere.hello"} /> 😢
+                        <img src={"https://nowhere.hello"} alt="" /> 😢
                       </span>
                     </div>
 
@@ -435,7 +459,8 @@ function App() {
                       }}
                     >
                       <img src={eth} alt="ethereum" />
-                      Supporting Ethereum NFTs only at this time.
+                      Supporting Ethereum NFTs (ERC721 Compatible) only at this
+                      time.
                     </div>
                     <TextField
                       fullWidth
@@ -477,10 +502,13 @@ function App() {
                       variant="contained"
                       onClick={handleClick}
                       className={classes.button}
-                      disabled={isButtonEnabled()}
+                      disabled={isButtonEnabled() || isLoading}
                       fullWidth
                       style={{
-                        background: isButtonEnabled() ? "#e0e0e0" : "#9856EC",
+                        background:
+                          isButtonEnabled() || isLoading
+                            ? "#e0e0e0"
+                            : "#9856EC",
                         color: "#FFFFFF",
                         fontFamily: "Helvetica",
                         fontWeight: 700,
@@ -489,8 +517,18 @@ function App() {
                         height: "56px",
                       }}
                     >
-                      Check My NFT
+                      {!isLoading
+                        ? "Check My NFT"
+                        : "Checking Your NFT... 🔎 🖼️"}
                     </Button>
+                    <div
+                      hidden={fetchError === ""}
+                      style={{ marginTop: "10px", width: "100%" }}
+                    >
+                      <Alert variant="outlined" severity="error">
+                        Error: {fetchError}
+                      </Alert>
+                    </div>
                   </div>
                 </Paper>
               </Grid>
@@ -575,6 +613,176 @@ function App() {
           </Container>
           <Container
             style={{
+              backgroundColor: "#E8D7FF",
+              width: "100vw",
+              maxWidth: "100%",
+            }}
+          >
+            <Grid
+              container
+              justify="center"
+              direction="column"
+              alignItems="center"
+            >
+              <Grid item>
+                <div
+                  style={{
+                    color: "rgba(243, 125, 245, 1)",
+                    fontFamily: "Poppins",
+                    fontWeight: 600,
+                    fontSize: "24px",
+                    marginTop: "40px",
+                  }}
+                >
+                  How it works 💾
+                </div>
+              </Grid>
+              <Grid item>
+                <div
+                  style={{
+                    fontFamily: "Poppins",
+                    fontWeight: 400,
+                    fontSize: "18px",
+                    marginTop: "10px",
+                  }}
+                >
+                  A brief explanation of how we assign ratings to assets
+                </div>
+              </Grid>
+              <Grid
+                item
+                style={{
+                  marginTop: "20px",
+                  width: "100%",
+                  marginBottom: "20px",
+                }}
+                xs={10}
+              >
+                <Paper
+                  elevation={0}
+                  style={{
+                    border: "1px solid #C4C4C4",
+                    padding: "20px",
+                    borderRadius: "20px",
+                    marginBottom: "20px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "Poppins",
+                      fontWeight: 600,
+                      fontSize: "24px",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    Storage Provider & NFT Asset Linking
+                  </div>
+
+                  <div
+                    style={{
+                      fontFamily: "Poppins",
+                      fontWeight: 400,
+                      fontSize: "14px",
+                    }}
+                  >
+                    CheckMyNFT rates your NFT asset storage based on the storage
+                    provider used and whether the asset is linked directly to
+                    the ERC-721 token. <br />
+                    <br />
+                    Centralized providers such as AWS S3, Dropbox and Google
+                    Drive are considered the least diserable as there is a risk
+                    that the assets could be lost if the NFT issuer or storage
+                    provider ceases operations or payment. Decentralized
+                    providers are most desireable with{" "}
+                    <a href="https://ipfs.io/" target="_blank" rel="noreferrer">
+                      IPFS
+                    </a>{" "}
+                    being of medium strength and{" "}
+                    <a
+                      href="https://www.arweave.org/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Arweave
+                    </a>{" "}
+                    being of the highest stength. Assets stored using IPFS rely
+                    on the goodwill of the people storing it. IPFS acts more as
+                    a map telling you where a specific piece of data resides,
+                    but does not incentivize anyone for actually storing such
+                    data. Arweave is most desirable in the ranking as it ensures
+                    permanent storage of the asset by incentivizing the storers
+                    through an upfront endowment payment. <br /> <br /> We also
+                    consider whether the asset is linked directly to it’s
+                    corresponding ERC-721 token.
+                    <br /> For example, in the case of{" "}
+                    <a
+                      href="https://etherscan.io/token/0xc2c747e0f7004f9e8817db2ca4997657a7746928#readContract"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Hashmasks
+                    </a>
+                    , the files are stored on IPFS but are not directly linked
+                    to the ERC-721 other than though their Provenance website.
+                    This results in a poor rating as there is the asset is not
+                    tied directly to the token. In contrast, in the case of{" "}
+                    <a
+                      href="https://etherscan.io/token/0xc6b0b290176aaab958441dcb0c64ad057cbc39a0?a=87#readContract"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      PixaWizards
+                    </a>
+                    , the IPFS URI is linked directly to each token which gives
+                    it a Medium strength rating.
+                  </div>
+                </Paper>
+
+                <Paper
+                  elevation={0}
+                  style={{
+                    border: "1px solid #C4C4C4",
+                    padding: "20px",
+                    borderRadius: "20px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "Poppins",
+                      fontWeight: 600,
+                      fontSize: "24px",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    How to fix an incorrect rating
+                  </div>
+
+                  <div
+                    style={{
+                      fontFamily: "Poppins",
+                      fontWeight: 400,
+                      fontSize: "14px",
+                    }}
+                  >
+                    In the event that an NFT’s asset storage practices have been
+                    incorrectly interpreted and rated, the NFT issuer can
+                    contact us at{" "}
+                    <a href="mailto:checkmynft@gmail.com">
+                      checkmynft@gmail.com
+                    </a>{" "}
+                    to clarify and provide additional details.
+                  </div>
+                </Paper>
+              </Grid>
+              <Grid item>
+                <Grid container spacing={1}>
+                  <Grid item xs={4}></Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Container>
+          <Container
+            style={{
               backgroundColor: "#FFE6F3",
 
               maxWidth: "100%",
@@ -613,12 +821,7 @@ function App() {
                   Here are some resources for you!
                 </div>
               </Grid>
-              <Grid
-                item
-                style={{ marginTop: "20px" }}
-                xs={10}
-                style={{ width: "100%" }}
-              >
+              <Grid item style={{ marginTop: "20px", width: "100%" }} xs={10}>
                 <Paper
                   elevation={0}
                   style={{
@@ -647,6 +850,7 @@ function App() {
                       <a
                         href="https://linda.mirror.xyz/df649d61efb92c910464a4e74ae213c4cab150b9cbcc4b7fb6090fc77881a95d"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -658,6 +862,7 @@ function App() {
                       <a
                         href="https://twitter.com/ljxie"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -676,6 +881,7 @@ function App() {
                       <a
                         href="https://variant.mirror.xyz/T8kdtZRIgy_srXB5B06L8vBqFHYlEBcv6ae2zR6Y_eo"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -687,6 +893,7 @@ function App() {
                       <a
                         href="https://twitter.com/jessewldn"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -704,6 +911,7 @@ function App() {
                       <a
                         href="https://coopahtroopa.mirror.xyz/PF42Z9oE_r6yhZN9jZrrseXfHaZALj9JIfMplshlgQ0"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -715,6 +923,7 @@ function App() {
                       <a
                         href="https://twitter.com/Cooopahtroopa"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -731,6 +940,7 @@ function App() {
                       <a
                         href="https://justincone.com/posts/nft-skeptics-guide/"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -749,6 +959,7 @@ function App() {
                       <a
                         href="https://opensea.io/blog/guides/non-fungible-tokens/"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -767,6 +978,7 @@ function App() {
                       <a
                         href="https://cointelegraph.com/magazine/nonfungible-tokens/"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -784,6 +996,7 @@ function App() {
                       <a
                         href="https://arweave.medium.com/nft-permanence-with-arweave-35b5d64eff23"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -833,6 +1046,7 @@ function App() {
                       <a
                         href="http://nfttok.com"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -844,6 +1058,7 @@ function App() {
                       <a
                         href="https://twitter.com/mikebodge"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -861,6 +1076,7 @@ function App() {
                       <a
                         href="https://niftygateway.com/"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -877,6 +1093,7 @@ function App() {
                       <a
                         href="https://nonfungible.com/"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -893,6 +1110,7 @@ function App() {
                       <a
                         href="https://opensea.io/"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -909,6 +1127,7 @@ function App() {
                       <a
                         href="https://rarible.com/"
                         target="_blank"
+                        rel="noreferrer"
                         style={{
                           textDecoration: "none",
                           color: "rgba(0, 201, 201, 1)",
@@ -936,7 +1155,7 @@ function App() {
           </Container>
           <Container
             style={{
-              height: "40vh",
+              height: "43vh",
               backgroundColor: "#D5FFC6",
 
               maxWidth: "100%",
@@ -1115,6 +1334,9 @@ function App() {
               alt="Check My NFT"
               width="391"
               height="50"
+              onClick={() => {
+                window.location.href = "/";
+              }}
               style={{ marginTop: "20px" }}
             />
             <Grid item xs={10} style={{ width: "100%" }}>
@@ -1164,7 +1386,12 @@ function App() {
                   </Grid>
                   <Grid item xs={4}>
                     <img
-                      src={nftInfo.image === "" ? "" : nftInfo.image}
+                      src={
+                        imageInfo.loading
+                          ? "https://media2.giphy.com/media/l0HUpt2s9Pclgt9Vm/giphy.gif?cid=ecf05e478r36mt7gmdsucy9877jyl8v19xr736c25phpkt2l&rid=giphy.gif"
+                          : imageInfo.image
+                      }
+                      alt="NFT"
                       style={{ maxWidth: "244px", maxHeight: "285px" }}
                     />
                   </Grid>
@@ -1243,6 +1470,7 @@ function App() {
                           <a
                             href={nftInfo.uriURL}
                             target="_blank"
+                            rel="noreferrer"
                             style={{ textDecoration: "none" }}
                           >
                             {nftInfo.tokenURI}
@@ -1350,6 +1578,7 @@ function App() {
                           <a
                             href={`https://etherscan.io/address/${nftInfo.address}`}
                             target="_blank"
+                            rel="noreferrer"
                             style={{ textDecoration: "none" }}
                           >
                             {nftInfo.address}
@@ -1380,6 +1609,7 @@ function App() {
                           <a
                             href={`https://etherscan.io/address/${nftInfo.address}#readContract`}
                             target="_blank"
+                            rel="noreferrer"
                             style={{ textDecoration: "none" }}
                           >
                             {nftInfo.tokenID}
@@ -1408,9 +1638,9 @@ function App() {
                           }}
                         >
                           <a
-                            href="#"
                             href={`https://etherscan.io/address/${nftInfo.owner}`}
                             target="_blank"
+                            rel="noreferrer"
                             style={{ textDecoration: "none" }}
                           >
                             {nftInfo.owner}
@@ -1425,10 +1655,12 @@ function App() {
             <Link
               onClick={() => {
                 setNFTInfo({});
+                setImageInfo(defaultImgState);
               }}
               style={{
                 color: "rgba(152, 86, 236, 1)",
                 marginBottom: "20px",
+                marginTop: "10px",
                 fontFamily: "Poppins",
                 fontSize: "18px",
                 fontWeight: 700,
