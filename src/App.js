@@ -221,6 +221,11 @@ let defaultImgState = {
   image: checkMyNFTImage,
   loading: false,
 };
+let defaultErrors = {
+  nftAddress: "",
+  tokenID: "",
+}
+
 function App() {
   const classes = useStyles();
   const [nftInfo, setNFTInfo] = useState({
@@ -1683,6 +1688,10 @@ function App() {
               onClick={() => {
                 setNFTInfo({});
                 setImageInfo(defaultImgState);
+                setErrors(defaultErrors)
+                setNFTAddress("")
+                setTokenID("")
+                setFetchError("")
               }}
               style={{
                 color: "rgba(152, 86, 236, 1)",
