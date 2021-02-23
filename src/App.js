@@ -449,7 +449,7 @@ function App() {
                         fontFamily: "Poppins",
                         fontSize: "18px",
                         textAlign: "center",
-                        marginTop:"10px"
+                        marginTop: "10px",
                       }}
                     >
                       Enter your NFT contract address & token ID to see the
