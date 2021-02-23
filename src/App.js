@@ -224,7 +224,7 @@ let defaultImgState = {
 let defaultErrors = {
   nftAddress: "",
   tokenID: "",
-}
+};
 
 function App() {
   const classes = useStyles();
@@ -396,12 +396,11 @@ function App() {
       style={{
         backgroundColor: "#D8F6FF",
         height: "100%",
-        width: "100vw",
       }}
     >
       {!nftInfo.level ? (
-        <div>
-          <Container style={{ height: "80vh", width: "100vw" }}>
+        <React.Fragment>
+          <Container style={{ height: "80vh" }}>
             <Grid
               container
               spacing={3}
@@ -418,7 +417,6 @@ function App() {
               />
               <Grid item>
                 <Grid container>
-                  <Grid item xs></Grid>
                   <Grid item xs={12}>
                     <div
                       style={{
@@ -451,13 +449,13 @@ function App() {
                         fontFamily: "Poppins",
                         fontSize: "18px",
                         textAlign: "center",
+                        marginTop:"10px"
                       }}
                     >
                       Enter your NFT contract address & token ID to see the
                       strength of your NFT’s assets.
                     </div>
                   </Grid>
-                  <Grid item xs></Grid>
                 </Grid>
               </Grid>
               <Grid item xs={10} style={{ width: "100%" }}>
@@ -476,7 +474,6 @@ function App() {
                       alignItems: "center",
                       justifyContent: "center",
                       flexDirection: "column",
-                      // padding: "20px",
                     }}
                   >
                     <div
@@ -491,7 +488,7 @@ function App() {
                       }}
                     >
                       <img src={eth} alt="ethereum" />
-                      Supporting Ethereum NFTs (ERC721 Compatible) only at this
+                      Supporting Ethereum NFTs (ERC-721 Compatible) only at this
                       time.
                     </div>
                     <TextField
@@ -816,7 +813,6 @@ function App() {
           <Container
             style={{
               backgroundColor: "#FFE6F3",
-
               maxWidth: "100%",
             }}
           >
@@ -1189,7 +1185,6 @@ function App() {
             style={{
               height: "43vh",
               backgroundColor: "#D5FFC6",
-
               maxWidth: "100%",
             }}
           >
@@ -1209,7 +1204,7 @@ function App() {
                     marginTop: "40px",
                   }}
                 >
-                  Support CheckMyNft.com 🙏{" "}
+                  Support CheckMyNFT.com 🙏{" "}
                 </div>
               </Grid>
               <Grid item>
@@ -1357,7 +1352,7 @@ function App() {
               </IconButton>
             </Grid>
           </Container>
-        </div>
+        </React.Fragment>
       ) : (
         <Container style={{ height: "100%" }}>
           <Grid container spacing={1} direction="column" alignItems="center">
@@ -1688,10 +1683,10 @@ function App() {
               onClick={() => {
                 setNFTInfo({});
                 setImageInfo(defaultImgState);
-                setErrors(defaultErrors)
-                setNFTAddress("")
-                setTokenID("")
-                setFetchError("")
+                setErrors(defaultErrors);
+                setNFTAddress("");
+                setTokenID("");
+                setFetchError("");
               }}
               style={{
                 color: "rgba(152, 86, 236, 1)",
