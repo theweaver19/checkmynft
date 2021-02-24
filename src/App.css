@@ -1,4 +1,5 @@
 .App {
+  background-color: #d8f6ff;
 }
 
 .App-logo {
@@ -12,6 +13,20 @@
 }
 .App-link {
   color: #61dafb;
+}
+
+.root {
+  height: 100%;
+  background-color: #D8F6FF;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+  overflow-x: hidden;
 }
 
 @keyframes App-logo-spin {

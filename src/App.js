@@ -33,7 +33,7 @@ import { Alert } from "@material-ui/lab";
 // Rari Medium example: 0xd07dc4262bcdbf85190c01c996b4c06a461d2430 with tokenURI: 140082
 // Poor from known poor example: 0x06012c8cf97bead5deae237070f9587f8e7a266d
 // Poor from centralized example: 0xBe065d51ef9aE7d4550942Fe9C4E948606260C6C
-// Poor from centralized example: 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 with tokenURI: 22000042
+// Good from centralized example (but stored on chain): 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 with tokenURI: 22000042
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -72,6 +72,16 @@ const useStyles = makeStyles((theme) =>
 let knownPoor = [
   "0x06012c8cf97bead5deae237070f9587f8e7a266d".toLowerCase(),
   "0xC2C747E0F7004F9E8817Db2ca4997657a7746928".toLowerCase(),
+];
+
+// AvaStars 0xF3E778F839934fC819cFA1040AabaCeCBA01e049 all data is store on chain
+// infiNFTAlpha, store both on Arweave and IPFS 0xD0c402BCBcB5E70157635C41b2810b42Fe592bb0
+// Artblocks 0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a and 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 (store on chain)
+let knownGood = [
+  "0xF3E778F839934fC819cFA1040AabaCeCBA01e049".toLowerCase(),
+  "0xD0c402BCBcB5E70157635C41b2810b42Fe592bb0".toLowerCase(),
+  "0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a".toLowerCase(),
+  "0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270".toLowerCase(),
 ];
 
 // Cryptopunks (store the info SHA256 of the image on the contract, image is not necessarily stored in a distributed fashion)
@@ -159,11 +169,36 @@ const levels = {
 
 const arweave = Arweave.init();
 
+var wssOptions = {
+  timeout: 30000, // ms
+
+  clientConfig: {
+    // Useful if requests are large
+    maxReceivedFrameSize: 100000000, // bytes - default: 1MiB
+    maxReceivedMessageSize: 100000000, // bytes - default: 8MiB
+
+    // Useful to keep a connection alive
+    keepalive: true,
+    keepaliveInterval: 60000, // ms
+  },
+
+  // Enable auto reconnection
+  reconnect: {
+    auto: true,
+    delay: 5000, // ms
+    maxAttempts: 5,
+    onTimeout: false,
+  },
+};
+
 const web3 = new Web3(
-  "wss://mainnet.infura.io/ws/v3/a30464df239144d0a8eae3f8a426d03e"
+  new Web3.providers.WebsocketProvider(
+    "wss://mainnet.infura.io/ws/v3/a30464df239144d0a8eae3f8a426d03e",
+    wssOptions
+  )
 );
 
-let ipfsEndpoint = "https://cloudflare-ipfs.com";
+let ipfsEndpoint = "https://ipfs.io/ipfs/";
 let arweaveEndpoint = "https://arweave.net";
 
 const isIPFSHash = (hash) => {
@@ -183,8 +218,8 @@ const getURLFromURI = async (uri) => {
     // if protocol other IPFS -- get the ipfs hash
     if (url.protocol === "ipfs:") {
       // ipfs://ipfs/Qm
-      let cleaned = url.pathname.replace("//", "/");
-      return [ipfsEndpoint + cleaned, "ipfs"];
+      let ipfsHash = url.href.replace("ipfs://ipfs/", "");
+      return [ipfsEndpoint + ipfsHash, "ipfs"];
     }
 
     if (url.pathname.includes("ipfs") || url.pathname.includes("Qm")) {
@@ -304,7 +339,6 @@ function App() {
       const symbol = await contract.methods.symbol().call();
       const name = await contract.methods.name().call();
 
-      // do something with cryptokitty
       if (knownPoor.includes(nftAddress.toLowerCase())) {
         setNFTInfo({
           level: "poor",
@@ -318,18 +352,27 @@ function App() {
           uriURL: "N/A",
         });
         setImageInfo(defaultImgState);
+        return;
       }
       const [tokenURI, err] = await tryToGetTokenURI(contract, tokenID);
       if (err !== "") {
         console.error(err);
-        setFetchError("Could not fetch token URI for NFT");
+        setFetchError("Could not fetch token URI for NFT " + tokenURI);
         setIsLoading(false);
         return;
       }
 
       let [uriURL, uriProtocol] = await getURLFromURI(tokenURI);
 
-      const uriResponse = await fetch(uriURL, { method: "GET" });
+      let uriResponse;
+      try {
+        uriResponse = await fetch(uriURL, { method: "GET" });
+      } catch (e) {
+        console.error(e);
+        setFetchError("Could not fetch NFT URI " + tokenURI);
+        setIsLoading(false);
+        return;
+      }
 
       let uriInfo = await uriResponse.json();
       let imgURI = uriInfo.image;
@@ -337,15 +380,21 @@ function App() {
       let [imageURIURL] = await getURLFromURI(imgURI);
       setImageInfo({ ...imageInfo, loading: true });
 
-      fetch(imageURIURL, { method: "GET" }).then(async (imageResponse) => {
-        let imageBlob = await imageResponse.blob();
-        let image = URL.createObjectURL(imageBlob);
-        setImageInfo({
-          imageURIURL: imageURIURL,
-          image: image,
-          loading: false,
+      fetch(imageURIURL, { method: "GET" })
+        .then(async (imageResponse) => {
+          let imageBlob = await imageResponse.blob();
+          let image = URL.createObjectURL(imageBlob);
+          setImageInfo({
+            imageURIURL: imageURIURL,
+            image: image,
+            loading: false,
+          });
+        })
+        .catch((e) => {
+          console.error(e);
+          setFetchError("Could not fetch NFT Image " + imgURI);
+          setIsLoading(false);
         });
-      });
 
       let severity = "undefined";
       switch (uriProtocol) {
@@ -360,6 +409,22 @@ function App() {
           break;
         default:
           severity = "undefined";
+      }
+
+      if (knownGood.includes(nftAddress.toLowerCase())) {
+        setNFTInfo({
+          level: "strong",
+          owner,
+          tokenURI,
+          symbol,
+          name,
+          address: nftAddress,
+          tokenID: tokenID,
+          protocol: "On-chain",
+          uriURL,
+        });
+        setIsLoading(false);
+        return;
       }
 
       setNFTInfo({
@@ -391,13 +456,7 @@ function App() {
   };
 
   return (
-    <div
-      className="App"
-      style={{
-        backgroundColor: "#D8F6FF",
-        // height: "100%",
-      }}
-    >
+    <div className="App" style={{}}>
       {!nftInfo.level ? (
         <React.Fragment>
           <Container>
@@ -407,13 +466,14 @@ function App() {
               justify="center"
               direction="column"
               alignItems="center"
+              alignContent="center"
             >
               <img
                 src={checkMyNFT}
                 alt="Check My NFT"
                 width="391"
                 height="50"
-                style={{ marginTop: "50px" }}
+                style={{ marginTop: "50px", objectFit: "contain" }}
               />
               <Grid item>
                 <Grid container>
@@ -463,7 +523,8 @@ function App() {
                   elevation={0}
                   style={{
                     border: "1px solid #C4C4C4",
-                    padding: "20px 40px 40px 40px",
+                    paddingTop: "20px",
+                    paddingBottom: "30px",
                     width: "100%",
                     borderRadius: "20px",
                     marginBottom: "40px",
@@ -475,6 +536,8 @@ function App() {
                       alignItems: "center",
                       justifyContent: "center",
                       flexDirection: "column",
+                      marginRight: "20px",
+                      marginLeft: "20px",
                     }}
                   >
                     <div
@@ -564,82 +627,6 @@ function App() {
               </Grid>
             </Grid>
           </Container>
-
-          <Container
-            style={{
-              backgroundColor: "rgba(255, 254, 160, 1)",
-              maxWidth: "100%",
-            }}
-          >
-            <Grid
-              container
-              justify="center"
-              direction="column"
-              alignItems="center"
-            >
-              <Grid item>
-                <div
-                  style={{
-                    color: "rgba(243, 125, 245, 1)",
-                    fontFamily: "Poppins",
-                    fontWeight: 600,
-                    fontSize: "24px",
-                    marginTop: "40px",
-                  }}
-                >
-                  Food for thought 🍱
-                </div>
-              </Grid>
-              <Grid item>
-                <div
-                  style={{
-                    fontFamily: "Poppins",
-                    fontWeight: 400,
-                    fontSize: "18px",
-                    marginTop: "10px",
-                  }}
-                >
-                  Some thoughts around NFT asset storage from crypto twitter
-                </div>
-              </Grid>
-              <Grid item>
-                <Grid container spacing={1}>
-                  <Grid item xs={4}>
-                    <TwitterTweetEmbed
-                      tweetId={"1308315853335732224"}
-                      options={{
-                        conversation: "none",
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TwitterTweetEmbed tweetId={"1363541347689463808"} />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TwitterTweetEmbed tweetId={"1353370945730306048"} />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TwitterTweetEmbed tweetId={"1362914198548750336"} />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TwitterTweetEmbed tweetId={"1362539804236386305"} />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TwitterTweetEmbed tweetId={"1341827289907146753"} />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TwitterTweetEmbed tweetId={"1354320520141889540"} />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TwitterTweetEmbed tweetId={"1319977641252933633"} />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TwitterTweetEmbed tweetId={"1358080255978782721"} />
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Container>
           <Container
             style={{
               backgroundColor: "#E8D7FF",
@@ -672,6 +659,7 @@ function App() {
                     fontWeight: 400,
                     fontSize: "18px",
                     marginTop: "10px",
+                    textAlign: "center",
                   }}
                 >
                   A brief explanation of how we assign ratings to assets
@@ -718,10 +706,10 @@ function App() {
                     linked directly to the ERC-721 token. <br />
                     <br />
                     Centralized providers such as AWS S3, Dropbox and Google
-                    Drive are considered the least diserable as there is a risk
+                    Drive are considered the least desirable as there is a risk
                     that the assets could be lost if the NFT issuer or storage
                     provider ceases operations or payment. Decentralized
-                    providers are most desireable with{" "}
+                    providers are most desirable with{" "}
                     <a href="https://ipfs.io/" target="_blank" rel="noreferrer">
                       IPFS
                     </a>{" "}
@@ -751,7 +739,7 @@ function App() {
                       Hashmasks
                     </a>
                     , the files are stored on IPFS but are not directly linked
-                    to the ERC-721 other than though their Provenance website.
+                    to the ERC-721 other than through their Provenance website.
                     This results in a poor rating as there is the asset is not
                     tied directly to the token. In contrast, in the case of{" "}
                     <a
@@ -811,6 +799,147 @@ function App() {
           </Container>
           <Container
             style={{
+              backgroundColor: "rgba(255, 254, 160, 1)",
+              maxWidth: "100%",
+            }}
+          >
+            <Grid
+              container
+              justify="center"
+              direction="column"
+              alignItems="center"
+              alignContent="center"
+            >
+              <Grid item>
+                <div
+                  style={{
+                    color: "rgba(243, 125, 245, 1)",
+                    fontFamily: "Poppins",
+                    fontWeight: 600,
+                    fontSize: "24px",
+                    marginTop: "40px",
+                  }}
+                >
+                  Food for thought 🍱
+                </div>
+              </Grid>
+              <Grid item>
+                <div
+                  style={{
+                    fontFamily: "Poppins",
+                    fontWeight: 400,
+                    fontSize: "18px",
+                    marginTop: "10px",
+                    textAlign: "center",
+                  }}
+                >
+                  Some thoughts around NFT asset storage from crypto twitter
+                </div>
+              </Grid>
+              <Grid item>
+                <Grid
+                  container
+                  spacing={1}
+                  style={{ width: "100%" }}
+                  justify="center"
+                >
+                  <Grid item md>
+                    <TwitterTweetEmbed
+                      tweetId={"1308315853335732224"}
+                      options={{
+                        conversation: "none",
+                        cards: "hidden",
+                        width: 400,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item md>
+                    <TwitterTweetEmbed
+                      tweetId={"1363541347689463808"}
+                      options={{
+                        conversation: "none",
+                        cards: "hidden",
+                        width: 400,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item md>
+                    <TwitterTweetEmbed
+                      tweetId={"1353370945730306048"}
+                      options={{
+                        conversation: "none",
+                        cards: "hidden",
+                        width: 400,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item md>
+                    <TwitterTweetEmbed
+                      tweetId={"1362914198548750336"}
+                      options={{
+                        conversation: "none",
+                        cards: "hidden",
+                        width: 400,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item md>
+                    <TwitterTweetEmbed
+                      tweetId={"1362539804236386305"}
+                      options={{
+                        conversation: "none",
+                        cards: "hidden",
+                        width: 400,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item md>
+                    <TwitterTweetEmbed
+                      tweetId={"1341827289907146753"}
+                      options={{
+                        conversation: "none",
+                        cards: "hidden",
+                        width: 400,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item md>
+                    <TwitterTweetEmbed
+                      tweetId={"1354320520141889540"}
+                      options={{
+                        conversation: "none",
+                        cards: "hidden",
+                        width: 400,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item md>
+                    <TwitterTweetEmbed
+                      tweetId={"1319977641252933633"}
+                      options={{
+                        conversation: "none",
+                        cards: "hidden",
+                        width: 400,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item md>
+                    <TwitterTweetEmbed
+                      tweetId={"1358080255978782721"}
+                      options={{
+                        conversation: "none",
+                        cards: "hidden",
+                        width: 400,
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Container>
+
+          <Container
+            style={{
               backgroundColor: "#FFE6F3",
               maxWidth: "100%",
             }}
@@ -842,6 +971,7 @@ function App() {
                     fontSize: "18px",
                     marginTop: "10px",
                     marginBottom: "20px",
+                    textAlign: "center",
                   }}
                 >
                   Want to learn more about NFTs but aren’t sure where to start?
@@ -1173,6 +1303,7 @@ function App() {
                   fontFamily: "Poppins",
                   fontWeight: 400,
                   fontSize: "14px",
+                  textAlign: "center",
                 }}
               >
                 Have a resource you want to include here? Email us at{" "}
@@ -1191,6 +1322,7 @@ function App() {
               justify="center"
               direction="column"
               alignItems="center"
+              alignContent="center"
             >
               <Grid item>
                 <div
@@ -1200,6 +1332,7 @@ function App() {
                     fontWeight: 600,
                     fontSize: "24px",
                     marginTop: "40px",
+                    textAlign: "center",
                   }}
                 >
                   Support CheckMyNFT.com 🙏{" "}
@@ -1212,6 +1345,7 @@ function App() {
                     fontWeight: 400,
                     fontSize: "18px",
                     marginTop: "10px",
+                    textAlign: "center",
                   }}
                 >
                   If you enjoyed this service and want to support further
@@ -1224,8 +1358,10 @@ function App() {
                   elevation={0}
                   style={{
                     border: "1px solid #C4C4C4",
-                    padding: "20px",
-                    width: "100%",
+                    paddingTop: "20px",
+                    paddingBottom: "20px",
+                    paddingLeft: "20px",
+                    paddingRight: "20px",
                     borderRadius: "20px",
                     marginBottom: "40px",
                   }}
@@ -1265,7 +1401,13 @@ function App() {
                               border: "none",
                             }}
                           >
-                            R9tbkcRNGYzstB6kYa4OFdqf2JGU1Mg-qqEd2gDL-g4
+                            <a
+                              href="https://viewblock.io/arweave/address/R9tbkcRNGYzstB6kYa4OFdqf2JGU1Mg-qqEd2gDL-g4"
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              R9tbkcRNGYzstB6kYa4OFdqf2JGU1Mg-qqEd2gDL-g4
+                            </a>
                           </TableCell>
                         </TableRow>
                         <TableRow key={"uri"} scope="row">
@@ -1289,7 +1431,13 @@ function App() {
                               border: "none",
                             }}
                           >
-                            3MPs9i4VwEBfoF5zn5nv9o9BxrNXEQRA9d
+                            <a
+                              href="https://www.blockchain.com/btc/address/3MPs9i4VwEBfoF5zn5nv9o9BxrNXEQRA9d"
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              3MPs9i4VwEBfoF5zn5nv9o9BxrNXEQRA9d
+                            </a>
                           </TableCell>
                         </TableRow>
                         <TableRow key={"eth"} scope="row">
@@ -1313,7 +1461,13 @@ function App() {
                               border: "none",
                             }}
                           >
-                            0xa8CC2B4bd58C778a45dEe62Bb0714E2dA37cA95C
+                            <a
+                              href="https://etherscan.io/address/0xa8CC2B4bd58C778a45dEe62Bb0714E2dA37cA95C"
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              0xa8CC2B4bd58C778a45dEe62Bb0714E2dA37cA95C
+                            </a>
                           </TableCell>
                         </TableRow>
                       </TableBody>
@@ -1324,15 +1478,17 @@ function App() {
             </Grid>
           </Container>
           <Container
+            maxWidth={false}
             style={{
               backgroundColor: "#D8F6FF",
+              // width:100%
             }}
           >
             <Grid
               container
               justify="center"
               alignItems="center"
-              style={{ marginTop: "20px" }}
+              style={{ paddingTop: "20px" }}
             >
               <IconButton
                 onClick={() => {
@@ -1352,353 +1508,386 @@ function App() {
           </Container>
         </React.Fragment>
       ) : (
-        <Container style={{ height: "100%" }}>
-          <Grid container spacing={1} direction="column" alignItems="center">
-            <img
-              src={checkMyNFT}
-              alt="Check My NFT"
-              width="391"
-              height="50"
-              onClick={() => {
-                window.location.href = "/";
-              }}
-              style={{ marginTop: "20px" }}
-            />
-            <Grid item xs={10} style={{ width: "100%" }}>
-              <Paper
-                elevation={0}
-                style={{
-                  border: "1px solid #C4C4C4",
-                  padding: "20px",
-                  width: "100%",
-                  borderRadius: "20px",
+        <React.Fragment>
+          <Container>
+            <Grid
+              container
+              spacing={1}
+              direction="column"
+              alignItems="center"
+              alignContent="center"
+              // style={{ height: "100%" }}
+            >
+              <img
+                src={checkMyNFT}
+                alt="Check My NFT"
+                width="391"
+                height="50"
+                onClick={() => {
+                  setNFTInfo({});
+                  setImageInfo(defaultImgState);
+                  setErrors(defaultErrors);
+                  setNFTAddress("");
+                  setTokenID("");
+                  setFetchError("");
                 }}
-              >
-                <Grid container spacing={1}>
-                  <Grid item xs={8}>
-                    <div
-                      style={{
-                        fontFamily: "Poppins",
-                        fontWeight: 600,
-                        fontSize: "24px",
-                        marginBottom: "10px",
-                      }}
-                    >
-                      Asset Strength
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: "Poppins",
-                        fontWeight: 600,
-                        fontSize: "24px",
-                        color: levels[nftInfo.level].barColor,
-                      }}
-                    >
-                      {nftInfo.level ? levels[nftInfo.level].title : ""}
-                      <LinearProgress
-                        variant="determinate"
-                        value={levels[nftInfo.level].level}
-                        className={classes[levels[nftInfo.level].barClass]}
+                style={{ marginTop: "20px", objectFit: "contain" }}
+              />
+              <Grid item xs={10} style={{ width: "100%" }}>
+                <Paper
+                  elevation={0}
+                  style={{
+                    border: "1px solid #C4C4C4",
+                    // padding: "20px",
+                    width: "100%",
+                    borderRadius: "20px",
+                  }}
+                >
+                  <Grid
+                    container
+                    spacing={1}
+                    justify="center"
+                    style={{
+                      paddingTop: "20px",
+                      paddingBottom: "20px",
+                      paddingLeft: "20px",
+                      paddingRight: "20px",
+                    }}
+                  >
+                    <Grid item xs={8}>
+                      <div
                         style={{
-                          width: "350px",
-                          height: "16px",
-                          borderRadius: "20px",
-                          marginBottom: "30px",
+                          fontFamily: "Poppins",
+                          fontWeight: 600,
+                          fontSize: "24px",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        Asset Strength
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "Poppins",
+                          fontWeight: 600,
+                          fontSize: "24px",
+                          color: levels[nftInfo.level].barColor,
+                        }}
+                      >
+                        {nftInfo.level ? levels[nftInfo.level].title : ""}
+                        <LinearProgress
+                          variant="determinate"
+                          value={levels[nftInfo.level].level}
+                          className={classes[levels[nftInfo.level].barClass]}
+                          style={{
+                            maxWidth: "350px",
+                            height: "16px",
+                            objectFit: "contain",
+                            borderRadius: "20px",
+                            marginBottom: "30px",
+                          }}
+                        />
+                      </div>
+                      {nftInfo.level ? levels[nftInfo.level].text : ""}
+                    </Grid>
+                    <Grid item md={4}>
+                      <img
+                        src={
+                          imageInfo.loading
+                            ? "https://media2.giphy.com/media/l0HUpt2s9Pclgt9Vm/giphy.gif?cid=ecf05e478r36mt7gmdsucy9877jyl8v19xr736c25phpkt2l&rid=giphy.gif"
+                            : imageInfo.image
+                        }
+                        alt="NFT"
+                        style={{
+                          width: "244px",
+                          height: "285px",
+                          objectFit: "contain",
                         }}
                       />
-                    </div>
-                    {nftInfo.level ? levels[nftInfo.level].text : ""}
+                    </Grid>
                   </Grid>
-                  <Grid item xs={4}>
-                    <img
-                      src={
-                        imageInfo.loading
-                          ? "https://media2.giphy.com/media/l0HUpt2s9Pclgt9Vm/giphy.gif?cid=ecf05e478r36mt7gmdsucy9877jyl8v19xr736c25phpkt2l&rid=giphy.gif"
-                          : imageInfo.image
-                      }
-                      alt="NFT"
-                      style={{ width: "244px", height: "285px" }}
-                    />
-                  </Grid>
-                </Grid>
-              </Paper>
-            </Grid>
-            <Grid item xs={10} style={{ width: "100%" }}>
-              <Paper
-                elevation={0}
-                style={{
-                  border: "1px solid #C4C4C4",
-                  padding: "20px",
-                  width: "100%",
-                  borderRadius: "20px",
-                }}
-              >
-                <div
+                </Paper>
+              </Grid>
+              <Grid item xs={10} style={{ width: "100%" }}>
+                <Paper
+                  elevation={0}
                   style={{
-                    fontFamily: "Poppins",
-                    fontWeight: 600,
-                    fontSize: "24px",
-                    marginBottom: "10px",
+                    border: "1px solid #C4C4C4",
+                    paddingTop: "20px",
+                    paddingBottom: "20px",
+                    paddingLeft: "20px",
+                    paddingRight: "20px",
+                    borderRadius: "20px",
                   }}
                 >
-                  Asset Storage
-                </div>
+                  <div
+                    style={{
+                      fontFamily: "Poppins",
+                      fontWeight: 600,
+                      fontSize: "24px",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    Asset Storage
+                  </div>
 
-                <TableContainer>
-                  <Table size="small">
-                    <TableBody>
-                      <TableRow key={"stored_on"} scope="row">
-                        <TableCell
-                          style={{
-                            color: "rgba(0, 0, 0, 0.25)",
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                            paddingLeft: "0",
-                            maxWidth: "100px",
-                            width: "100px",
-                          }}
-                        >
-                          Stored on:
-                        </TableCell>
-                        <TableCell
-                          style={{
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                          }}
-                        >
-                          {capitalize(nftInfo.protocol)}
-                        </TableCell>
-                      </TableRow>
-                      <TableRow key={"uri"} scope="row">
-                        <TableCell
-                          style={{
-                            color: "rgba(0, 0, 0, 0.25)",
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                            maxWidth: "100px",
-                            paddingLeft: "0",
-                            width: "100px",
-                          }}
-                        >
-                          URI:
-                        </TableCell>
-                        <TableCell
-                          style={{
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                          }}
-                        >
-                          <a
-                            href={nftInfo.uriURL}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ textDecoration: "none" }}
+                  <TableContainer>
+                    <Table size="small">
+                      <TableBody>
+                        <TableRow key={"stored_on"} scope="row">
+                          <TableCell
+                            style={{
+                              color: "rgba(0, 0, 0, 0.25)",
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                              paddingLeft: "0",
+                              maxWidth: "100px",
+                              width: "100px",
+                            }}
                           >
-                            {nftInfo.tokenURI}
-                          </a>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Paper>
-            </Grid>
-            <Grid item xs={10} style={{ width: "100%" }}>
-              <Paper
-                elevation={0}
-                style={{
-                  border: "1px solid #C4C4C4",
-                  padding: "20px",
-                  width: "100%",
-                  borderRadius: "20px",
-                }}
-              >
-                <div
+                            Stored on:
+                          </TableCell>
+                          <TableCell
+                            style={{
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                            }}
+                          >
+                            {capitalize(nftInfo.protocol)}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow key={"uri"} scope="row">
+                          <TableCell
+                            style={{
+                              color: "rgba(0, 0, 0, 0.25)",
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                              maxWidth: "100px",
+                              paddingLeft: "0",
+                              width: "100px",
+                            }}
+                          >
+                            URI:
+                          </TableCell>
+                          <TableCell
+                            style={{
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                            }}
+                          >
+                            <a
+                              href={nftInfo.uriURL}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ textDecoration: "none" }}
+                            >
+                              {nftInfo.tokenURI}
+                            </a>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              </Grid>
+              <Grid item xs={10} style={{ width: "100%" }}>
+                <Paper
+                  elevation={0}
                   style={{
-                    fontFamily: "Poppins",
-                    fontWeight: 600,
-                    fontSize: "24px",
-                    marginBottom: "10px",
+                    border: "1px solid #C4C4C4",
+                    paddingTop: "20px",
+                    paddingBottom: "20px",
+                    paddingLeft: "20px",
+                    paddingRight: "20px",
+                    borderRadius: "20px",
                   }}
                 >
-                  NFT Details
-                </div>
+                  <div
+                    style={{
+                      fontFamily: "Poppins",
+                      fontWeight: 600,
+                      fontSize: "24px",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    NFT Details
+                  </div>
 
-                <TableContainer>
-                  <Table size="small">
-                    <TableBody>
-                      <TableRow key={"name"} scope="row">
-                        <TableCell
-                          style={{
-                            color: "rgba(0, 0, 0, 0.25)",
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                            paddingLeft: "0",
-                            maxWidth: "100px",
-                            width: "100px",
-                          }}
-                        >
-                          Name:
-                        </TableCell>
-                        <TableCell
-                          style={{
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                          }}
-                        >
-                          {nftInfo.name}
-                        </TableCell>
-                      </TableRow>
-                      <TableRow key={"symbol"} scope="row">
-                        <TableCell
-                          style={{
-                            color: "rgba(0, 0, 0, 0.25)",
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                            paddingLeft: "0",
-                            maxWidth: "100px",
-                            width: "100px",
-                          }}
-                        >
-                          Symbol:
-                        </TableCell>
-                        <TableCell
-                          style={{
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                          }}
-                        >
-                          {nftInfo.symbol}
-                        </TableCell>
-                      </TableRow>
-                      <TableRow key={"contract"} scope="row">
-                        <TableCell
-                          style={{
-                            color: "rgba(0, 0, 0, 0.25)",
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                            maxWidth: "100px",
-                            paddingLeft: "0",
-                            width: "100px",
-                          }}
-                        >
-                          Contract:
-                        </TableCell>
-                        <TableCell
-                          style={{
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                          }}
-                        >
-                          <a
-                            href={`https://etherscan.io/address/${nftInfo.address}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ textDecoration: "none" }}
+                  <TableContainer>
+                    <Table size="small">
+                      <TableBody>
+                        <TableRow key={"name"} scope="row">
+                          <TableCell
+                            style={{
+                              color: "rgba(0, 0, 0, 0.25)",
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                              paddingLeft: "0",
+                              maxWidth: "100px",
+                              width: "100px",
+                            }}
                           >
-                            {nftInfo.address}
-                          </a>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow key={"token_id"} scope="row">
-                        <TableCell
-                          style={{
-                            color: "rgba(0, 0, 0, 0.25)",
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                            maxWidth: "100px",
-                            paddingLeft: "0",
-                            width: "100px",
-                          }}
-                        >
-                          Token ID:
-                        </TableCell>
-                        <TableCell
-                          style={{
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                          }}
-                        >
-                          <a
-                            href={`https://etherscan.io/address/${nftInfo.address}#readContract`}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ textDecoration: "none" }}
+                            Name:
+                          </TableCell>
+                          <TableCell
+                            style={{
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                            }}
                           >
-                            {nftInfo.tokenID}
-                          </a>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow key={"owned_by"} scope="row">
-                        <TableCell
-                          style={{
-                            color: "rgba(0, 0, 0, 0.25)",
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                            maxWidth: "100px",
-                            paddingLeft: "0",
-                            width: "100px",
-                          }}
-                        >
-                          Owned By:
-                        </TableCell>
-                        <TableCell
-                          style={{
-                            fontFamily: "Poppins",
-                            fontSize: "16px",
-                            border: "none",
-                          }}
-                        >
-                          <a
-                            href={`https://etherscan.io/address/${nftInfo.owner}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ textDecoration: "none" }}
+                            {nftInfo.name}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow key={"symbol"} scope="row">
+                          <TableCell
+                            style={{
+                              color: "rgba(0, 0, 0, 0.25)",
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                              paddingLeft: "0",
+                              maxWidth: "100px",
+                              width: "100px",
+                            }}
                           >
-                            {nftInfo.owner}
-                          </a>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Paper>
+                            Symbol:
+                          </TableCell>
+                          <TableCell
+                            style={{
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                            }}
+                          >
+                            {nftInfo.symbol}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow key={"contract"} scope="row">
+                          <TableCell
+                            style={{
+                              color: "rgba(0, 0, 0, 0.25)",
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                              maxWidth: "100px",
+                              paddingLeft: "0",
+                              width: "100px",
+                            }}
+                          >
+                            Contract:
+                          </TableCell>
+                          <TableCell
+                            style={{
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                            }}
+                          >
+                            <a
+                              href={`https://etherscan.io/address/${nftInfo.address}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ textDecoration: "none" }}
+                            >
+                              {nftInfo.address}
+                            </a>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow key={"token_id"} scope="row">
+                          <TableCell
+                            style={{
+                              color: "rgba(0, 0, 0, 0.25)",
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                              maxWidth: "100px",
+                              paddingLeft: "0",
+                              width: "100px",
+                            }}
+                          >
+                            Token ID:
+                          </TableCell>
+                          <TableCell
+                            style={{
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                            }}
+                          >
+                            <a
+                              href={`https://etherscan.io/address/${nftInfo.address}#readContract`}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ textDecoration: "none" }}
+                            >
+                              {nftInfo.tokenID}
+                            </a>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow key={"owned_by"} scope="row">
+                          <TableCell
+                            style={{
+                              color: "rgba(0, 0, 0, 0.25)",
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                              maxWidth: "100px",
+                              paddingLeft: "0",
+                              width: "100px",
+                            }}
+                          >
+                            Owned By:
+                          </TableCell>
+                          <TableCell
+                            style={{
+                              fontFamily: "Poppins",
+                              fontSize: "16px",
+                              border: "none",
+                            }}
+                          >
+                            <a
+                              href={`https://etherscan.io/address/${nftInfo.owner}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ textDecoration: "none" }}
+                            >
+                              {nftInfo.owner}
+                            </a>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              </Grid>
+              <Link
+                onClick={() => {
+                  setNFTInfo({});
+                  setImageInfo(defaultImgState);
+                  setErrors(defaultErrors);
+                  setNFTAddress("");
+                  setTokenID("");
+                  setFetchError("");
+                }}
+                style={{
+                  color: "rgba(152, 86, 236, 1)",
+                  marginBottom: "20px",
+                  marginTop: "10px",
+                  fontFamily: "Poppins",
+                  fontSize: "18px",
+                  fontWeight: 700,
+                }}
+              >
+                Check another NFT
+              </Link>
             </Grid>
-            <Link
-              onClick={() => {
-                setNFTInfo({});
-                setImageInfo(defaultImgState);
-                setErrors(defaultErrors);
-                setNFTAddress("");
-                setTokenID("");
-                setFetchError("");
-              }}
-              style={{
-                color: "rgba(152, 86, 236, 1)",
-                marginBottom: "20px",
-                marginTop: "10px",
-                fontFamily: "Poppins",
-                fontSize: "18px",
-                fontWeight: 700,
-              }}
-            >
-              Check another NFT
-            </Link>
-          </Grid>
-        </Container>
+          </Container>
+        </React.Fragment>
       )}
     </div>
   );
