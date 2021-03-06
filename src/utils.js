@@ -20,6 +20,9 @@ query {
 }
 `;
 
+export const createTweet = (tokenAddress, tokenID) => {
+  return `https://twitter.com/intent/tweet?text=Just%20saved%20the%20metadata%20%26%20assets%20of%20NFT%20${tokenAddress}%20Token%20%23${tokenID}%20on%20@ArweaveTeam%20thanks%20to%20@checkmynft.%20If%20your%20NFT%20is%20already%20saved%20on%20IPFS%2C%20you%20can%20pin%20it%20permanently%20on%20Arweave%20for%20free%20at%20https%3A//checkmynft.com`;
+};
 
 export const checkIfOnArweave = async (ipfsHash) => {
   let res = await fetch("https://arweave.dev/graphql", {
@@ -31,7 +34,6 @@ export const checkIfOnArweave = async (ipfsHash) => {
   });
 
   let arweaveResponse = await res.json();
-  console.log(arweaveResponse);
   if (arweaveResponse.data.transactions.edges.length > 0) {
     return arweaveResponse.data.transactions.edges[0].node.id;
   }
@@ -64,12 +66,9 @@ export const deployToIPFS = async (ipfsHash) => {
     body: JSON.stringify({ query: buildQuery(ipfsHash) }),
   });
 
-  let arweaveResponse = await res.json();
-  if (arweaveResponse.data.transactions.edges.length > 0) {
-    return arweaveResponse.data.transactions.edges[0].id;
-  }
+  let response = await res.json();
 
-  return "";
+  return response.arweaveId;
 };
 
 export const isIPFSHash = (hash) => {

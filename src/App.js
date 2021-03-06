@@ -1,11 +1,15 @@
 import "./App.css";
 import {
+  Backdrop,
   Button,
   capitalize,
+  CircularProgress,
   Container,
+  Fade,
   IconButton,
   LinearProgress,
   Link,
+  Modal,
   Paper,
   TextField,
 } from "@material-ui/core";
@@ -24,8 +28,9 @@ import github from "./images/github.png";
 import twitter from "./images/twitter.png";
 import eth from "./images/eth.png";
 import checkMyNFTImage from "./images/checkMyNFT.png";
-import { TwitterTweetEmbed } from "react-twitter-embed";
+import { TwitterTweetEmbed, TwitterShareButton } from "react-twitter-embed";
 import { Alert } from "@material-ui/lab";
+import arweaveDeployment from "./images/arweave_deployment.png";
 import {
   getURLFromURI,
   checkIfOnArweave,
@@ -34,8 +39,13 @@ import {
   knownGood,
   knownPoor,
   walkIPFSLinks,
+  createTweet,
+  deployToIPFS,
 } from "./utils";
+import { Check } from "@material-ui/icons";
 
+// TODO -- check if IPFS has exists on arweave
+// TODO add tutorial to upload to arweave
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -65,6 +75,18 @@ const useStyles = makeStyles((theme) =>
       "& .MuiLinearProgress-barColorPrimary": {
         backgroundColor: "#C4C4C4",
       },
+    },
+    modal: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      outline: "none",
+    },
+    paper: {
+      backgroundColor: theme.palette.background.paper,
+      borderRadius: "20px",
+      padding: theme.spacing(4, 4, 4, 4),
+      outline: "none",
     },
   })
 );
@@ -208,6 +230,11 @@ function App() {
   const [tokenID, setTokenID] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
+  const [open, setOpen] = useState(false);
+  const [arweaveMetadataUploadedURL, setArweaveMetadataUploadedURL] = useState(
+    ""
+  );
+  const [arweaveImageUploadedURL, setArweaveImageUploadedURL] = useState("");
 
   const validateAddress = (address) => {
     if (address.length === 40 || address.length === 42) {
@@ -244,8 +271,40 @@ function App() {
     return [tokenURI, error];
   };
 
+  const handleUploadToArweaveClick = async () => {
+    setOpen(true);
+    try {
+      let metadataCID = await walkIPFSLinks(
+        nftInfo.uriURL.replace(ipfsGetEndpoint, "").split("/")[0]
+      );
+      // upload
+      let arweaveMetadatadaID = await deployToIPFS(metadataCID);
+      // await new Promise((resolve) => {
+      //   setTimeout(() => {
+      //     resolve();
+      //   }, 3000);
+      // });
+      setArweaveMetadataUploadedURL(
+        arweaveEndpoint + "/" + arweaveMetadatadaID
+      );
+      let imageCID = await walkIPFSLinks(
+        imageInfo.imageURIURL.replace(ipfsGetEndpoint, "").split("/")[0]
+      );
+      let arweaveImageCID = await deployToIPFS(imageCID);
+      setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
+
+      console.log(metadataCID);
+      console.log(arweaveMetadatadaID);
+      console.log(imageCID);
+      console.log(arweaveImageCID);
+    } catch (e) {
+      setOpen(false);
+    }
+  };
+
   const handleClick = async () => {
     setIsLoading(true);
+    setArweaveMetadataUploadedURL("ss");
     try {
       const contract = new web3.eth.Contract(ERC721ABI, nftAddress);
 
@@ -429,6 +488,184 @@ function App() {
 
   return (
     <div className="App" style={{}}>
+      <Modal
+        open={open}
+        onClose={setOpen}
+        BackdropComponent={Backdrop}
+        className={classes.modal}
+      >
+        <Fade in={open}>
+          {arweaveImageUploadedURL === "" &&
+          arweaveMetadataUploadedURL === "" ? (
+            <div className={classes.paper}>
+              <div
+                style={{
+                  fontFamily: "Poppins",
+                  fontSize: "20px",
+                  fontWeight: 600,
+                  textAlign: "center",
+                  marginBottom: "40px",
+                }}
+              >
+                Hang tight!
+              </div>
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <CircularProgress size={60} style={{ color: "#9856EC" }} />
+              </div>
+              <div
+                style={{
+                  fontFamily: "Poppins",
+                  fontSize: "16px",
+                  fontWeight: 400,
+                  textAlign: "center",
+                  maxWidth: "470px",
+                  marginTop: "40px",
+                }}
+              >
+                Your NFT is being uploaded to the permaweb!
+                <div>
+                  Token metadata:{" "}
+                  {arweaveMetadataUploadedURL !== "" ? (
+                    <Check style={{ color: "green" }} />
+                  ) : (
+                    "Uploading..."
+                  )}{" "}
+                </div>
+                <div>
+                  Token Image:{" "}
+                  {arweaveImageUploadedURL !== "" ? (
+                    <Check style={{ color: "green" }} />
+                  ) : (
+                    "Uploading..."
+                  )}{" "}
+                </div>
+                <br />
+                Just a few seconds left until immortality 🌈
+              </div>
+              <br />
+            </div>
+          ) : (
+            <div className={classes.paper}>
+              <div
+                style={{
+                  fontFamily: "Poppins",
+                  fontSize: "24px",
+                  fontWeight: 600,
+                  textAlign: "center",
+                  marginBottom: "40px",
+                  color: "#16CA48",
+                }}
+              >
+                Success! 🎉
+              </div>
+              <div
+                style={{
+                  fontFamily: "Poppins",
+                  fontSize: "16px",
+                  fontWeight: 400,
+                  textAlign: "center",
+                  maxWidth: "470px",
+                  marginTop: "40px",
+                }}
+              >
+                Your NFT has been saved on Arweave! You just ensured the
+                longevity of your artwork. Great job!
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginTop: "20px",
+                }}
+              >
+                <img src={arweaveDeployment} alt="Deployment" />
+              </div>
+              <div
+                style={{
+                  fontFamily: "Poppins",
+                  fontSize: "16px",
+                  fontWeight: 400,
+                  textAlign: "center",
+                  maxWidth: "470px",
+                  marginTop: "40px",
+                  color: "rgba(0, 0, 0, 0.25)",
+                }}
+              >
+                Arweave Metadata TX ID:{" "}
+                <a
+                  href={arweaveMetadataUploadedURL}
+                  alt="metadata"
+                  target="_blank"
+                >
+                  {arweaveMetadataUploadedURL === ""
+                    ? ""
+                    : arweaveMetadataUploadedURL.replace(
+                        arweaveEndpoint + "/",
+                        ""
+                      )}
+                </a>
+                <br />
+                Arweave Image TX ID:{" "}
+                <a
+                  href={arweaveImageUploadedURL}
+                  alt="Image URL"
+                  target="_blank"
+                >
+                  {arweaveImageUploadedURL === ""
+                    ? ""
+                    : arweaveImageUploadedURL.replace(
+                        arweaveEndpoint + "/",
+                        ""
+                      )}
+                </a>
+              </div>
+
+              <div
+                style={{
+                  fontFamily: "Poppins",
+                  fontSize: "16px",
+                  fontWeight: 400,
+                  textAlign: "center",
+                  maxWidth: "470px",
+                  marginTop: "40px",
+                }}
+              >
+                Share the news to help other artists and collectors learn about
+                this service!
+              </div>
+
+              <a
+                class="twitter-share-button"
+                onClick={() => setOpen(false)}
+                style={{
+                  textTransform: "none",
+                  textDecoration: "none",
+                }}
+                target="_blank"
+                href={createTweet(nftInfo.address, nftInfo.tokenID)}
+              >
+                <Button
+                  variant="contained"
+                  className={classes.button}
+                  fullWidth
+                  style={{
+                    background: "rgba(29, 161, 242, 1)",
+                    color: "#FFFFFF",
+                    fontFamily: "Helvetica",
+                    fontWeight: 700,
+                    textTransform: "none",
+                    fontSize: "21px",
+                    marginTop: "20px",
+                    height: "56px",
+                  }}
+                >
+                  Tweet
+                </Button>
+              </a>
+            </div>
+          )}
+        </Fade>
+      </Modal>
       {!nftInfo.level ? (
         <React.Fragment>
           <Container>
@@ -723,6 +960,54 @@ function App() {
                     </a>
                     , the IPFS URI is linked directly to each token which gives
                     it a Medium strength rating.
+                  </div>
+                </Paper>
+
+                <Paper
+                  elevation={0}
+                  style={{
+                    border: "1px solid #C4C4C4",
+                    padding: "20px",
+                    borderRadius: "20px",
+                    marginBottom: "20px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "Poppins",
+                      fontWeight: 600,
+                      fontSize: "24px",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    Improve your NFT Asset score (for free)
+                  </div>
+
+                  <div
+                    style={{
+                      fontFamily: "Poppins",
+                      fontWeight: 400,
+                      fontSize: "14px",
+                    }}
+                  >
+                    If your NFT asset has a medium ranking and is saved on IPFS,
+                    CheckMyNFT allows you to upload your file that resides on
+                    IPFS to Arweave where it will be permanently available!
+                    <br />
+                    <br />
+                    We use{" "}
+                    <a
+                      href="https://ipfs2arweave.com"
+                      alt="ipfs2arweave"
+                      target="_blank"
+                    >
+                      IPFS2Arweave.com
+                    </a>{" "}
+                    to permanently deploy the asset from IPFS to Arweave. To do
+                    this, ipfs2arweave take the asset’s IPFS Hash, stores the
+                    data onto Arweave and pins it to IPFS.
+                    <br /> <br />
+                    Plus, this will boost your NFT Asset score to strong 💪
                   </div>
                 </Paper>
 
@@ -1579,6 +1864,90 @@ function App() {
                   </Grid>
                 </Paper>
               </Grid>
+              {nftInfo.protocol === "ipfs" ? (
+                <Grid item xs={10} style={{ width: "100%" }}>
+                  <Paper
+                    elevation={0}
+                    style={{
+                      border: "1px solid #C4C4C4",
+                      // padding: "20px",
+                      backgroundColor: "#D5FFC6",
+                      width: "100%",
+                      borderRadius: "20px",
+                    }}
+                  >
+                    <Grid
+                      container
+                      spacing={1}
+                      style={{
+                        paddingTop: "20px",
+                        paddingBottom: "20px",
+                        paddingLeft: "20px",
+                        paddingRight: "20px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: "Poppins",
+                          fontWeight: 600,
+                          fontSize: "18px",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        Level up your NFT! Save this NFT asset on Arweave 🖼️
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "Poppins",
+                          fontWeight: 400,
+                          fontSize: "18px",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        Thanks to an community member, you can upload your file
+                        that resides on IPFS to Arweave where it will be
+                        permanently available!
+                        <br />
+                        <br />
+                        We use{" "}
+                        <a
+                          href="https://ipfs2arweave.com"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          IPFS2Arweave.com
+                        </a>{" "}
+                        to permanently deploy the asset from IPFS to Arweave. To
+                        do this, ipfs2arweave take the asset’s IPFS Hash (both
+                        the token URI and the image URI), fetches the data and
+                        stores it onto Arweave
+                        <br />
+                        <br /> Plus, this will boost your NFT Asset score to
+                        strong 💪
+                      </div>
+                      <Button
+                        variant="contained"
+                        onClick={handleUploadToArweaveClick}
+                        className={classes.button}
+                        fullWidth
+                        style={{
+                          background: "#9856EC",
+                          color: "#FFFFFF",
+                          fontFamily: "Helvetica",
+                          fontWeight: 700,
+                          textTransform: "none",
+                          marginTop: "20px",
+                          height: "56px",
+                        }}
+                      >
+                        Upload to Arweave (for free!)
+                      </Button>
+                    </Grid>
+                  </Paper>
+                </Grid>
+              ) : (
+                <div></div>
+              )}
               <Grid item xs={10} style={{ width: "100%" }}>
                 <Paper
                   elevation={0}
