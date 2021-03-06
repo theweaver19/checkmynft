@@ -25,7 +25,7 @@ export const createTweet = (tokenAddress, tokenID) => {
 };
 
 export const getArweaveIDByCID = async (ipfsHash) => {
-  let res = await fetch("https://arweave.dev/graphql", {
+  let res = await fetch("https://arweave.net/graphql", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

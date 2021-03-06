@@ -286,18 +286,26 @@ function App() {
       //   arweaveEndpoint + "/" + arweaveMetadatadaID
       // );
 
-      console.log("getting metadata CID");
       // let arweaveImageCID = await deployToIPFS(imageCID);
       // setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
+      console.log("deploying metadata")
       await deployToIPFS(metadataCID);
+      console.log("deploying image")
+      await deployToIPFS(imageCID);
+      // We wait 5 seconds to ensure the graphql endpoint updates
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 5000);
+      });
+      console.log("getting metadata CID");
       let arweaveMetadatadaID = await getArweaveIDByCID(metadataCID);
       setArweaveMetadataUploadedURL(
         arweaveEndpoint + "/" + arweaveMetadatadaID
       );
 
+      
       console.log("getting image CID");
-
-      await deployToIPFS(imageCID);
       let arweaveImageCID = await getArweaveIDByCID(imageCID);
       setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
 
