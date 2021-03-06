@@ -15,7 +15,6 @@ import Grid from "@material-ui/core/Grid";
 import checkMyNFT from "./images/logo.png";
 import Web3 from "web3";
 import { ERC721ABI } from "./ERC721ABI";
-import Arweave from "arweave";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -27,13 +26,16 @@ import eth from "./images/eth.png";
 import checkMyNFTImage from "./images/checkMyNFT.png";
 import { TwitterTweetEmbed } from "react-twitter-embed";
 import { Alert } from "@material-ui/lab";
+import {
+  getURLFromURI,
+  checkIfOnArweave,
+  arweaveEndpoint,
+  ipfsGetEndpoint,
+  knownGood,
+  knownPoor,
+  walkIPFSLinks,
+} from "./utils";
 
-// ARWEAVE example: 0x97F1482116F6459eD7156f1E4fC76b023C9b4BB3
-// IPFS example: 0xc6b0b290176aaab958441dcb0c64ad057cbc39a0
-// Rari Medium example: 0xd07dc4262bcdbf85190c01c996b4c06a461d2430 with tokenURI: 140082
-// Poor from known poor example: 0x06012c8cf97bead5deae237070f9587f8e7a266d
-// Poor from centralized example: 0xBe065d51ef9aE7d4550942Fe9C4E948606260C6C
-// Good from centralized example (but stored on chain): 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 with tokenURI: 22000042
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -66,30 +68,6 @@ const useStyles = makeStyles((theme) =>
     },
   })
 );
-
-// Cryptokitties 0x06012c8cf97bead5deae237070f9587f8e7a266d (no reference to the tokenURI on the contract)
-// Hashmasks 0xC2C747E0F7004F9E8817Db2ca4997657a7746928, they don't store any tokenURI on the blockchain (only a hosted webpage with links to)
-let knownPoor = [
-  "0x06012c8cf97bead5deae237070f9587f8e7a266d".toLowerCase(),
-  "0xC2C747E0F7004F9E8817Db2ca4997657a7746928".toLowerCase(),
-];
-
-// AvaStars 0xF3E778F839934fC819cFA1040AabaCeCBA01e049 all data is store on chain
-// infiNFTAlpha, store both on Arweave and IPFS 0xD0c402BCBcB5E70157635C41b2810b42Fe592bb0
-// Artblocks 0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a and 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 (store on chain)
-let knownGood = [
-  "0xF3E778F839934fC819cFA1040AabaCeCBA01e049".toLowerCase(),
-  "0xD0c402BCBcB5E70157635C41b2810b42Fe592bb0".toLowerCase(),
-  "0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a".toLowerCase(),
-  "0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270".toLowerCase(),
-];
-
-// Cryptopunks (store the info SHA256 of the image on the contract, image is not necessarily stored in a distributed fashion)
-
-// TODO check cryptopunks contract!
-// let knownMedium = ["0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb".toLowerCase()];
-
-// TODO error Alert
 
 const levels = {
   strong: {
@@ -165,10 +143,6 @@ const levels = {
   },
 };
 
-// then look at the uri itself
-
-const arweave = Arweave.init();
-
 var wssOptions = {
   timeout: 30000, // ms
 
@@ -197,59 +171,6 @@ const web3 = new Web3(
     wssOptions
   )
 );
-
-let ipfsEndpoint = "https://ipfs.io/ipfs/";
-let arweaveEndpoint = "https://arweave.net";
-
-const isIPFSHash = (hash) => {
-  if (hash.substring(0, 2) === "Qm") {
-    return true;
-  }
-  return false;
-};
-
-const getURLFromURI = async (uri) => {
-  try {
-    if (!uri) {
-      return ["", "undefined"];
-    }
-    // if correct URI we get the protocol
-    let url = new URL(uri);
-    // if protocol other IPFS -- get the ipfs hash
-    if (url.protocol === "ipfs:") {
-      // ipfs://ipfs/Qm
-      let ipfsHash = url.href.replace("ipfs://ipfs/", "");
-      return [ipfsEndpoint + ipfsHash, "ipfs"];
-    }
-
-    if (url.pathname.includes("ipfs") || url.pathname.includes("Qm")) {
-      return [url.href, "ipfs"];
-    }
-
-    // otherwise we check if arweave (arweave in the name or arweave.net)
-    if (url.hostname === "arweave.net") {
-      return [arweaveEndpoint + url.pathname, "arweave"];
-    }
-
-    // otherwise it's a centralized uri
-    return [uri, "centralized"];
-  } catch (e) {
-    // it's not a url, we keep checking
-    // check if IPFS
-    if (isIPFSHash(uri)) {
-      return [ipfsEndpoint + uri, "ipfs"];
-    }
-
-    try {
-      // could be an arweave tx ID, check it
-      await arweave.transactions.get(uri);
-      return [arweaveEndpoint + uri, "arweave"];
-    } catch (e) {
-      // otherwise we don't know
-      return ["", "undefined"];
-    }
-  }
-};
 
 let defaultImgState = {
   imageURIURL: "",
@@ -354,7 +275,7 @@ function App() {
         setImageInfo(defaultImgState);
         return;
       }
-      const [tokenURI, err] = await tryToGetTokenURI(contract, tokenID);
+      let [tokenURI, err] = await tryToGetTokenURI(contract, tokenID);
       if (err !== "") {
         console.error(err);
         setFetchError("Could not fetch token URI for NFT " + tokenURI);
@@ -377,7 +298,43 @@ function App() {
       let uriInfo = await uriResponse.json();
       let imgURI = uriInfo.image;
 
-      let [imageURIURL] = await getURLFromURI(imgURI);
+      let [imageURIURL, protocol] = await getURLFromURI(imgURI);
+
+      let isImageOnArweave = false;
+      let isMetadataOnArweave = false;
+
+      // if the protocol is on IPFS, we check if the tokenURI AND the imageURI are stored on Arweave via ipfs2arweave.com
+      if (protocol === "ipfs") {
+        let metadataCID = uriURL.replace(ipfsGetEndpoint, "");
+        let rootMetadataCID = metadataCID.split("/");
+        if (rootMetadataCID.length !== 0) {
+          rootMetadataCID = await walkIPFSLinks(rootMetadataCID[0]);
+        }
+
+        let imageCID = imageURIURL.replace(ipfsGetEndpoint, "");
+        let rootImageCID = imageCID.split("/");
+        if (rootImageCID.length !== 0) {
+          rootImageCID = await walkIPFSLinks(rootImageCID[0]);
+        }
+
+        try {
+          // We check to see if the IPFS hash is stored on arweave
+          let arweaveImageID = await checkIfOnArweave(rootImageCID);
+          if (arweaveImageID !== "") {
+            //  we change the imageURIURL to the arweaveImageID
+            imageURIURL = arweaveEndpoint + "/" + arweaveImageID;
+            isImageOnArweave = true;
+          }
+          let arweaveMetadataID = await checkIfOnArweave(rootMetadataCID);
+          if (arweaveMetadataID !== "") {
+            tokenURI = arweaveEndpoint + "/" + arweaveMetadataID;
+            isMetadataOnArweave = true;
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      }
+
       setImageInfo({ ...imageInfo, loading: true });
 
       fetch(imageURIURL, { method: "GET" })
@@ -421,6 +378,21 @@ function App() {
           address: nftAddress,
           tokenID: tokenID,
           protocol: "On-chain",
+          uriURL,
+        });
+        setIsLoading(false);
+        return;
+      }
+      if (protocol === "ipfs" && isImageOnArweave && isMetadataOnArweave) {
+        setNFTInfo({
+          level: "strong",
+          owner,
+          tokenURI,
+          symbol,
+          name,
+          address: nftAddress,
+          tokenID: tokenID,
+          protocol: "Arweave & IPFS",
           uriURL,
         });
         setIsLoading(false);
@@ -1433,7 +1405,7 @@ function App() {
                           >
                             <a
                               href="https://www.blockchain.com/btc/address/3MPs9i4VwEBfoF5zn5nv9o9BxrNXEQRA9d"
-                              rel="noreferrer"
+                              // rel="noreferrer"
                               target="_blank"
                             >
                               3MPs9i4VwEBfoF5zn5nv9o9BxrNXEQRA9d
