@@ -599,6 +599,7 @@ function App() {
                   href={arweaveMetadataUploadedURL}
                   alt="metadata"
                   target="_blank"
+                  rel="noreferrer"
                 >
                   {arweaveMetadataUploadedURL === ""
                     ? ""
@@ -613,6 +614,7 @@ function App() {
                   href={arweaveImageUploadedURL}
                   alt="Image URL"
                   target="_blank"
+                  rel="noreferrer"
                 >
                   {arweaveImageUploadedURL === ""
                     ? ""
@@ -644,6 +646,7 @@ function App() {
                   textDecoration: "none",
                 }}
                 target="_blank"
+                rel="noreferrer"
                 href={createTweet(nftInfo.address, nftInfo.tokenID)}
               >
                 <Button
@@ -1002,6 +1005,7 @@ function App() {
                       href="https://ipfs2arweave.com"
                       alt="ipfs2arweave"
                       target="_blank"
+                      rel="noreferrer"
                     >
                       IPFS2Arweave.com
                     </a>{" "}
@@ -1692,7 +1696,7 @@ function App() {
                           >
                             <a
                               href="https://www.blockchain.com/btc/address/3MPs9i4VwEBfoF5zn5nv9o9BxrNXEQRA9d"
-                              // rel="noreferrer"
+                              rel="noreferrer"
                               target="_blank"
                             >
                               3MPs9i4VwEBfoF5zn5nv9o9BxrNXEQRA9d
