@@ -288,9 +288,9 @@ function App() {
 
       // let arweaveImageCID = await deployToIPFS(imageCID);
       // setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
-      console.log("deploying metadata")
+      console.log("deploying metadata");
       await deployToIPFS(metadataCID);
-      console.log("deploying image")
+      console.log("deploying image");
       await deployToIPFS(imageCID);
       // We wait 5 seconds to ensure the graphql endpoint updates
       await new Promise((resolve) => {
@@ -304,7 +304,6 @@ function App() {
         arweaveEndpoint + "/" + arweaveMetadatadaID
       );
 
-      
       console.log("getting image CID");
       let arweaveImageCID = await getArweaveIDByCID(imageCID);
       setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
@@ -1935,6 +1934,24 @@ function App() {
                         that resides on IPFS to Arweave where it will be
                         permanently available!
                         <br />
+                        <Button
+                          variant="contained"
+                          onClick={handleUploadToArweaveClick}
+                          className={classes.button}
+                          fullWidth
+                          style={{
+                            background: "#9856EC",
+                            color: "#FFFFFF",
+                            fontFamily: "Helvetica",
+                            fontWeight: 700,
+                            textTransform: "none",
+                            marginTop: "20px",
+                            height: "56px",
+                          }}
+                        >
+                          Upload to Arweave (for free!)
+                        </Button>
+                        <br />
                         <br />
                         We use{" "}
                         <a
@@ -1952,23 +1969,6 @@ function App() {
                         <br /> Plus, this will boost your NFT Asset score to
                         strong 💪
                       </div>
-                      <Button
-                        variant="contained"
-                        onClick={handleUploadToArweaveClick}
-                        className={classes.button}
-                        fullWidth
-                        style={{
-                          background: "#9856EC",
-                          color: "#FFFFFF",
-                          fontFamily: "Helvetica",
-                          fontWeight: 700,
-                          textTransform: "none",
-                          marginTop: "20px",
-                          height: "56px",
-                        }}
-                      >
-                        Upload to Arweave (for free!)
-                      </Button>
                     </Grid>
                   </Paper>
                 </Grid>
