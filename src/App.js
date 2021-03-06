@@ -28,7 +28,7 @@ import github from "./images/github.png";
 import twitter from "./images/twitter.png";
 import eth from "./images/eth.png";
 import checkMyNFTImage from "./images/checkMyNFT.png";
-import { TwitterTweetEmbed, TwitterShareButton } from "react-twitter-embed";
+import { TwitterTweetEmbed } from "react-twitter-embed";
 import { Alert } from "@material-ui/lab";
 import arweaveDeployment from "./images/arweave_deployment.png";
 import {
@@ -277,34 +277,37 @@ function App() {
       let metadataCID = await walkIPFSLinks(
         nftInfo.uriURL.replace(ipfsGetEndpoint, "").split("/")[0]
       );
+      let imageCID = await walkIPFSLinks(
+        imageInfo.imageURIURL.replace(ipfsGetEndpoint, "").split("/")[0]
+      );
       // upload
       let arweaveMetadatadaID = await deployToIPFS(metadataCID);
+      setArweaveMetadataUploadedURL(
+        arweaveEndpoint + "/" + arweaveMetadatadaID
+      );
+      let arweaveImageCID = await deployToIPFS(imageCID);
+      setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
+
       // await new Promise((resolve) => {
       //   setTimeout(() => {
       //     resolve();
       //   }, 3000);
       // });
-      setArweaveMetadataUploadedURL(
-        arweaveEndpoint + "/" + arweaveMetadatadaID
-      );
-      let imageCID = await walkIPFSLinks(
-        imageInfo.imageURIURL.replace(ipfsGetEndpoint, "").split("/")[0]
-      );
-      let arweaveImageCID = await deployToIPFS(imageCID);
-      setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
-
-      console.log(metadataCID);
-      console.log(arweaveMetadatadaID);
-      console.log(imageCID);
-      console.log(arweaveImageCID);
+      // setArweaveMetadataUploadedURL("https://example.com");
+      // await new Promise((resolve) => {
+      //   setTimeout(() => {
+      //     resolve();
+      //   }, 3000);
+      // });
+      // setArweaveImageUploadedURL("https://example.com");
     } catch (e) {
       setOpen(false);
+      console.error(e);
     }
   };
 
   const handleClick = async () => {
     setIsLoading(true);
-    setArweaveMetadataUploadedURL("ss");
     try {
       const contract = new web3.eth.Contract(ERC721ABI, nftAddress);
 
@@ -495,7 +498,7 @@ function App() {
         className={classes.modal}
       >
         <Fade in={open}>
-          {arweaveImageUploadedURL === "" &&
+          {arweaveImageUploadedURL === "" ||
           arweaveMetadataUploadedURL === "" ? (
             <div className={classes.paper}>
               <div
@@ -635,7 +638,6 @@ function App() {
               </div>
 
               <a
-                class="twitter-share-button"
                 onClick={() => setOpen(false)}
                 style={{
                   textTransform: "none",

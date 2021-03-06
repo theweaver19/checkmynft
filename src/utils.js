@@ -51,23 +51,15 @@ export const walkIPFSLinks = async (ipfsHash) => {
   if (ipfsResponse.Links.length > 0) {
     return walkIPFSLinks(ipfsResponse.Links[0].Hash);
   }
-  console.log("winner");
-  console.log("ipfsHash");
-  console.log(ipfsHash);
   return ipfsHash;
 };
 
 export const deployToIPFS = async (ipfsHash) => {
-  let res = await fetch("https://ipfs2arweave.dev/permapin/" + ipfsHash, {
+  const res = await fetch("https://ipfs2arweave.com/permapin/" + ipfsHash, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ query: buildQuery(ipfsHash) }),
   });
 
-  let response = await res.json();
-
+  const response = await res.json();
   return response.arweaveId;
 };
 
