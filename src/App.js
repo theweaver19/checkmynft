@@ -33,7 +33,7 @@ import { Alert } from "@material-ui/lab";
 import arweaveDeployment from "./images/arweave_deployment.png";
 import {
   getURLFromURI,
-  checkIfOnArweave,
+  getArweaveIDByCID,
   arweaveEndpoint,
   ipfsGetEndpoint,
   knownGood,
@@ -281,11 +281,24 @@ function App() {
         imageInfo.imageURIURL.replace(ipfsGetEndpoint, "").split("/")[0]
       );
       // upload
-      let arweaveMetadatadaID = await deployToIPFS(metadataCID);
+      // let arweaveMetadatadaID = await deployToIPFS(metadataCID);
+      // setArweaveMetadataUploadedURL(
+      //   arweaveEndpoint + "/" + arweaveMetadatadaID
+      // );
+
+      console.log("getting metadata CID");
+      // let arweaveImageCID = await deployToIPFS(imageCID);
+      // setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
+      await deployToIPFS(metadataCID);
+      let arweaveMetadatadaID = await getArweaveIDByCID(metadataCID);
       setArweaveMetadataUploadedURL(
         arweaveEndpoint + "/" + arweaveMetadatadaID
       );
-      let arweaveImageCID = await deployToIPFS(imageCID);
+
+      console.log("getting image CID");
+
+      await deployToIPFS(imageCID);
+      let arweaveImageCID = await getArweaveIDByCID(imageCID);
       setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
 
       // await new Promise((resolve) => {
@@ -381,13 +394,13 @@ function App() {
 
         try {
           // We check to see if the IPFS hash is stored on arweave
-          let arweaveImageID = await checkIfOnArweave(rootImageCID);
+          let arweaveImageID = await getArweaveIDByCID(rootImageCID);
           if (arweaveImageID !== "") {
             //  we change the imageURIURL to the arweaveImageID
             imageURIURL = arweaveEndpoint + "/" + arweaveImageID;
             isImageOnArweave = true;
           }
-          let arweaveMetadataID = await checkIfOnArweave(rootMetadataCID);
+          let arweaveMetadataID = await getArweaveIDByCID(rootMetadataCID);
           if (arweaveMetadataID !== "") {
             tokenURI = arweaveEndpoint + "/" + arweaveMetadataID;
             isMetadataOnArweave = true;

@@ -24,7 +24,7 @@ export const createTweet = (tokenAddress, tokenID) => {
   return `https://twitter.com/intent/tweet?text=Just%20saved%20the%20metadata%20%26%20assets%20of%20NFT%20${tokenAddress}%20Token%20%23${tokenID}%20on%20@ArweaveTeam%20thanks%20to%20@checkmynft.%20If%20your%20NFT%20is%20already%20saved%20on%20IPFS%2C%20you%20can%20pin%20it%20permanently%20on%20Arweave%20for%20free%20at%20https%3A//checkmynft.com`;
 };
 
-export const checkIfOnArweave = async (ipfsHash) => {
+export const getArweaveIDByCID = async (ipfsHash) => {
   let res = await fetch("https://arweave.dev/graphql", {
     method: "POST",
     headers: {
@@ -57,13 +57,20 @@ export const walkIPFSLinks = async (ipfsHash) => {
 export const deployToIPFS = async (ipfsHash) => {
   const res = await fetch("https://ipfs2arweave.com/permapin/" + ipfsHash, {
     method: "POST",
+    // we add no cors and we won't have info on the txID
+    mode: "no-cors",
   });
 
-  const response = await res.json();
-  return response.arweaveId;
+  // const response = await res.json();
+  if (res.status > 300) {
+    // continue
+    throw new Error("Could not deploy to ipfs2arweave " + (await res.text()));
+  }
+  // return response.arweaveId;
+  return;
 };
 
-export const isIPFSHash = (hash) => {
+export const isIPFSCID = (hash) => {
   if (hash.substring(0, 2) === "Qm") {
     return true;
   }
@@ -86,7 +93,10 @@ export const getURLFromURI = async (uri) => {
     }
 
     if (url.pathname.includes("ipfs") || url.pathname.includes("Qm")) {
-      return [url.href, "ipfs"];
+      // /ipfs/QmTtbYLMHaSqkZ7UenwEs9Sri6oUjQgnagktJSnHeWY8iG
+      let ipfsHash = url.pathname.replace("/ipfs/", "");
+
+      return [ipfsGetEndpoint + ipfsHash, "ipfs"];
     }
 
     // otherwise we check if arweave (arweave in the name or arweave.net)
@@ -99,7 +109,7 @@ export const getURLFromURI = async (uri) => {
   } catch (e) {
     // it's not a url, we keep checking
     // check if IPFS
-    if (isIPFSHash(uri)) {
+    if (isIPFSCID(uri)) {
       return [ipfsGetEndpoint + uri, "ipfs"];
     }
 
@@ -128,13 +138,14 @@ export const knownPoor = [
   "0xC2C747E0F7004F9E8817Db2ca4997657a7746928".toLowerCase(),
 ];
 
-// AvaStars 0xF3E778F839934fC819cFA1040AabaCeCBA01e049 all data is store on chain
-// infiNFTAlpha, store both on Arweave and IPFS 0xD0c402BCBcB5E70157635C41b2810b42Fe592bb0
-// Artblocks 0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a and 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 (store on chain)
 export const knownGood = [
+  // AvaStars 0xF3E778F839934fC819cFA1040AabaCeCBA01e049 all data is store on chain
   "0xF3E778F839934fC819cFA1040AabaCeCBA01e049".toLowerCase(),
+  // infiNFTAlpha, store both on Arweave and IPFS 0xD0c402BCBcB5E70157635C41b2810b42Fe592bb0
   "0xD0c402BCBcB5E70157635C41b2810b42Fe592bb0".toLowerCase(),
+  // Artblocks 0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a and 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 (store on chain)
   "0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a".toLowerCase(),
+  // Artblocks 0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a and 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 (store on chain)
   "0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270".toLowerCase(),
 ];
 
