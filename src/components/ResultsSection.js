@@ -28,7 +28,7 @@ export default function ResultsSection(props) {
     setArweaveImageUploadedURL,
     setErrors,
     setFetchError
-  } = props.props;
+  } = props.componentProps;
 
   let defaultErrors = {
     nftAddress: "",

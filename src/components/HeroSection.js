@@ -33,7 +33,7 @@ export default function HeroSection(props) {
     setErrors,
     fetchError,
     setFetchError
-  } = props.props;
+  } = props.componentProps;
 
   let wssOptions = {
     timeout: 30000, // ms

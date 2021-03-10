@@ -19,11 +19,7 @@ export default function ModalForm(props) {
     nftInfo,
     arweaveMetadataUploadedURL,
     arweaveImageUploadedURL,
-  } = props.props; // todo I don't think this is right
-
-  console.log(props);
-  // console.log(classes);
-  console.log(props.props.classes);
+  } = props.componentProps;
 
   return (
       <Modal

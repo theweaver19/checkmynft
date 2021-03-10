@@ -100,7 +100,7 @@ function App() {
     <div className="App" style={{}}>
 
       <ModalForm
-          props={{
+          componentProps={{
             classes,
             open,
             setOpen,
@@ -113,7 +113,7 @@ function App() {
       {!nftInfo.level ? (
         <React.Fragment>
           <HeroSection
-              props={{
+              componentProps={{
                 classes,
                 imageInfo,
                 setImageInfo,
@@ -139,7 +139,7 @@ function App() {
       ) : (
         <React.Fragment>
           <ResultsSection
-              props={{
+              componentProps={{
                 classes,
                 imageInfo,
                 setImageInfo,
