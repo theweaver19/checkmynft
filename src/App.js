@@ -45,6 +45,7 @@ import { Check } from "@material-ui/icons";
 import TwitterSection from "./components/TwitterSection";
 import HowItWorksSection from "./components/HowItWorksSection"
 import NFTResourcesSection from "./components/NFTResourcesSection"
+import FooterSection from "./components/FooterSection"
 
 // TODO -- check if IPFS has exists on arweave
 // TODO add tutorial to upload to arweave
@@ -1062,35 +1063,9 @@ function App() {
               </Grid>
             </Grid>
           </Container>
-          <Container
-            maxWidth={false}
-            style={{
-              backgroundColor: "#D8F6FF",
-              // width:100%
-            }}
-          >
-            <Grid
-              container
-              justify="center"
-              alignItems="center"
-              style={{ paddingTop: "20px" }}
-            >
-              <IconButton
-                onClick={() => {
-                  window.open("https://github.com/theweaver19/checkmynft");
-                }}
-              >
-                <img src={github} alt="github" />
-              </IconButton>
-              <IconButton
-                onClick={() => {
-                  window.open("https://twitter.com/checkmynft");
-                }}
-              >
-                <img src={twitter} alt="twitter" />
-              </IconButton>
-            </Grid>
-          </Container>
+
+          <FooterSection />
+
         </React.Fragment>
       ) : (
         <React.Fragment>
