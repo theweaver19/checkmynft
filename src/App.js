@@ -1,35 +1,9 @@
 import "./App.css";
-import {
-  Backdrop,
-  Button,
-  capitalize,
-  CircularProgress,
-  Container,
-  Fade,
-  IconButton,
-  LinearProgress,
-  Link,
-  Modal,
-  Paper,
-  TextField,
-} from "@material-ui/core";
 import React, { useState } from "react";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
-import checkMyNFT from "./images/logo.png";
 import Web3 from "web3";
 import { ERC721ABI } from "./ERC721ABI";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableRow from "@material-ui/core/TableRow";
-import github from "./images/github.png";
-import twitter from "./images/twitter.png";
-import eth from "./images/eth.png";
 import checkMyNFTImage from "./images/checkMyNFT.png";
-import { Alert } from "@material-ui/lab";
-import arweaveDeployment from "./images/arweave_deployment.png";
 import {
   getURLFromURI,
   getArweaveIDByCID,
@@ -38,10 +12,8 @@ import {
   knownGood,
   knownPoor,
   walkIPFSLinks,
-  createTweet,
   deployToIPFS,
 } from "./utils";
-import { Check } from "@material-ui/icons";
 import TwitterSection from "./components/TwitterSection";
 import HowItWorksSection from "./components/HowItWorksSection"
 import NFTResourcesSection from "./components/NFTResourcesSection"
