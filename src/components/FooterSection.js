@@ -1,10 +1,11 @@
-import React from "react";
+import React, {useState} from "react";
 import {Container, IconButton} from "@material-ui/core"
 import Grid from "@material-ui/core/Grid"
 import github from "../images/github.png"
 import twitter from "../images/twitter.png"
 
 export default function FooterSection() {
+
   return (
       <Container
           maxWidth={false}

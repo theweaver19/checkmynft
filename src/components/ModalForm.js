@@ -4,9 +4,26 @@ import Fade from "@material-ui/core/Fade"
 import CircularProgress from "@material-ui/core/CircularProgress"
 import {Check} from "@material-ui/icons"
 import Button from "@material-ui/core/Button"
+import {Backdrop} from "@material-ui/core"
+import arweaveDeployment from "../images/arweave_deployment.png";
+import {
+  arweaveEndpoint,
+  createTweet,
+} from "../utils"
 
-export default function ModalForm() {
+export default function ModalForm(props) {
+  let {
+    classes,
+    open,
+    setOpen,
+    nftInfo,
+    arweaveMetadataUploadedURL,
+    arweaveImageUploadedURL,
+  } = props.props; // todo I don't think this is right
 
+  console.log(props);
+  // console.log(classes);
+  console.log(props.props.classes);
 
   return (
       <Modal

@@ -1,8 +1,163 @@
 import React from "react";
 import {Container} from "@material-ui/core"
 import Grid from "@material-ui/core/Grid"
+import {arweaveEndpoint, deployToIPFS, getArweaveIDByCID, ipfsGetEndpoint, walkIPFSLinks} from "../utils"
+import checkMyNFT from "../images/logo.png";
+import Paper from "@material-ui/core/Paper"
+import LinearProgress from "@material-ui/core/LinearProgress"
+import TableRow from "@material-ui/core/TableRow"
+import TableCell from "@material-ui/core/TableCell"
+import TableContainer from "@material-ui/core/TableContainer"
+import Table from "@material-ui/core/Table"
+import TableBody from "@material-ui/core/TableBody"
+import Link from "@material-ui/core/Link"
+import Button from "@material-ui/core/Button"
+import { capitalize } from "@material-ui/core"; // todo check
 
-export default function ResultsSection() {
+export default function ResultsSection(props) {
+  let {
+    classes,
+    imageInfo,
+    setImageInfo,
+    setNFTAddress,
+    setOpen,
+    setTokenID,
+    nftInfo,
+    setNFTInfo,
+    setArweaveMetadataUploadedURL,
+    setArweaveImageUploadedURL,
+    setErrors,
+    setFetchError
+  } = props.props;
+
+  let defaultErrors = {
+    nftAddress: "",
+    tokenID: "",
+  };
+
+  const levels = {
+    strong: {
+      barColor: "#16CA48",
+      barClass: "loaderStrong",
+      title: "Strong 💚",
+      level: 100,
+      text: (
+          <div>
+            Your asset storage strength is strong and couldn’t be better 💚 <br />
+            <br /> This asset has been saved on Arweave which ensures permanent
+            availability of your asset. <br />
+            <br />
+            Wow. Very good NFT. So forever. 🌈 🐕
+          </div>
+      ),
+    },
+    medium: {
+      barColor: "rgba(237, 216, 32, 1)",
+      title: "Medium 💛",
+      barClass: "loaderMedium",
+      level: 50,
+      text: (
+          <div
+              style={{
+                fontFamily: "Poppins",
+                fontWeight: 400,
+                fontSize: "16px",
+                paddingRight: "40px",
+              }}
+          >
+            Your asset is stored on a decentralized provider, that’s great! 💛
+            <br />
+            <br />
+            Asset strength is Medium because long term permanence of the asset is
+            not guaranteed. The asset requires ongoing renewal and payment of the
+            storage contract or it will be permanently lost 😢 <br /> <br /> Ask
+            your NFT issuer to upload the asset to Arweave to ensure permanence.
+          </div>
+      ),
+    },
+    poor: {
+      barColor: "#FF6161",
+      title: "Poor 💔",
+      barClass: "loaderPoor",
+      level: 10,
+      text: (
+          <div>
+            This asset is either stored on a centralized provider or there might not
+            be a link between your NFT and the asset on chain. 💔 😬 Your asset is
+            at great risk of loss if the provider goes out of business, if the
+            issuer stops payment to the storage provider or if the link between your
+            NFT and the assets breaks (for example, if the link is stored on a
+            centralized website).
+            <br />
+            <br />
+            Ask your NFT issuer to consider decentralized storage options such as
+            IPFS or even better, Arweave for a permanent storage solution. 💪
+          </div>
+      ),
+    },
+    undefined: {
+      barColor: "rgba(196, 196, 196, 1)",
+      barClass: "loaderUndefined",
+      level: 0,
+      title: "Undefined ❔",
+      text: (
+          <div>
+            Your asset storage type and strength could not be identified from the
+            information provided.
+          </div>
+      ),
+    },
+  };
+
+  const handleUploadToArweaveClick = async () => {
+    setOpen(true);
+    try {
+      let metadataCID = await walkIPFSLinks(
+          nftInfo.uriURL.replace(ipfsGetEndpoint, "").split("/")[0]
+      );
+      let imageCID = await walkIPFSLinks(
+          imageInfo.imageURIURL.replace(ipfsGetEndpoint, "").split("/")[0]
+      );
+      // upload
+      console.log("deploying metadata");
+      await deployToIPFS(metadataCID);
+      console.log("deploying image");
+      await deployToIPFS(imageCID);
+      // We wait 5 seconds to ensure the graphql endpoint updates
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 5000);
+      });
+      console.log("getting metadata CID");
+      let arweaveMetadatadaID = await getArweaveIDByCID(metadataCID);
+      setArweaveMetadataUploadedURL(
+          arweaveEndpoint + "/" + arweaveMetadatadaID
+      );
+
+      console.log("getting image CID");
+      let arweaveImageCID = await getArweaveIDByCID(imageCID);
+      setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
+
+
+      // await new Promise((resolve) => {
+      //   setTimeout(() => {
+      //     resolve();
+      //   }, 3000);
+      // });
+      // setArweaveMetadataUploadedURL("https://example.com");
+      // await new Promise((resolve) => {
+      //   setTimeout(() => {
+      //     resolve();
+      //   }, 3000);
+      // });
+      // setArweaveImageUploadedURL("https://example.com");
+    } catch (e) {
+      setOpen(false);
+      console.error(e);
+    }
+  };
+
   return (
       <Container>
         <Grid
@@ -20,7 +175,8 @@ export default function ResultsSection() {
               height="50"
               onClick={() => {
                 setNFTInfo({});
-                setImageInfo(defaultImgState);
+                // setImageInfo(defaultImgState); // todo check
+                setImageInfo(imageInfo);
                 setErrors(defaultErrors);
                 setNFTAddress("");
                 setTokenID("");
@@ -482,7 +638,8 @@ export default function ResultsSection() {
           <Link
               onClick={() => {
                 setNFTInfo({});
-                setImageInfo(defaultImgState);
+                // setImageInfo(defaultImgState); // todo check
+                setImageInfo(imageInfo);
                 setErrors(defaultErrors);
                 setNFTAddress("");
                 setTokenID("");
