@@ -28,7 +28,6 @@ import github from "./images/github.png";
 import twitter from "./images/twitter.png";
 import eth from "./images/eth.png";
 import checkMyNFTImage from "./images/checkMyNFT.png";
-import { TwitterTweetEmbed } from "react-twitter-embed";
 import { Alert } from "@material-ui/lab";
 import arweaveDeployment from "./images/arweave_deployment.png";
 import {
@@ -43,7 +42,7 @@ import {
   deployToIPFS,
 } from "./utils";
 import { Check } from "@material-ui/icons";
-import TwitterSection from "./components/TwitterSection"
+import TwitterSection from "./components/TwitterSection";
 
 // TODO -- check if IPFS has exists on arweave
 // TODO add tutorial to upload to arweave
@@ -282,13 +281,6 @@ function App() {
         imageInfo.imageURIURL.replace(ipfsGetEndpoint, "").split("/")[0]
       );
       // upload
-      // let arweaveMetadatadaID = await deployToIPFS(metadataCID);
-      // setArweaveMetadataUploadedURL(
-      //   arweaveEndpoint + "/" + arweaveMetadatadaID
-      // );
-
-      // let arweaveImageCID = await deployToIPFS(imageCID);
-      // setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
       console.log("deploying metadata");
       await deployToIPFS(metadataCID);
       console.log("deploying image");
@@ -308,6 +300,7 @@ function App() {
       console.log("getting image CID");
       let arweaveImageCID = await getArweaveIDByCID(imageCID);
       setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
+
 
       // await new Promise((resolve) => {
       //   setTimeout(() => {
@@ -856,6 +849,38 @@ function App() {
                       <Alert variant="outlined" severity="error">
                         Error: {fetchError}
                       </Alert>
+                    </div>
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        backgroundColor: "#F1F1F1",
+                        border: "1px solid #9F9F9F",
+                        borderRadius: "3px",
+                        paddingTop: "10px",
+                        paddingBottom: "10px",
+                        paddingRight: "10px",
+                        paddingLeft: "10px",
+                        fontFamily: "Poppins",
+                        fontSize: "14px",
+                        color: "rgba(0, 0, 0, 0.6)",
+                      }}
+                    >
+                      <b>
+                        Please note that the Check My NFT ratings and site are
+                        an MVP.
+                      </b>{" "}
+                      Low ratings may be inaccurate if the NFT contract utilizes
+                      a non-standard storage format for the NFT assets. If you
+                      believe that a rating is incorrect, please submit a PR
+                      here to fix the rating (
+                      <a
+                        href="https://github.com/theweaver19/checkmynft"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        https://github.com/theweaver19/checkmynft
+                      </a>
+                      .)
                     </div>
                   </div>
                 </Paper>
@@ -1750,6 +1775,40 @@ function App() {
                           objectFit: "contain",
                         }}
                       />
+                    </Grid>
+                    <Grid item>
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          backgroundColor: "#F1F1F1",
+                          border: "1px solid #9F9F9F",
+                          borderRadius: "3px",
+                          paddingTop: "10px",
+                          paddingBottom: "10px",
+                          paddingRight: "10px",
+                          paddingLeft: "10px",
+                          fontFamily: "Poppins",
+                          fontSize: "14px",
+                          color: "rgba(0, 0, 0, 0.6)",
+                        }}
+                      >
+                        <b>
+                          Please note that the Check My NFT ratings and site are
+                          an MVP.
+                        </b>{" "}
+                        Low ratings may be inaccurate if the NFT contract
+                        utilizes a non-standard storage format for the NFT
+                        assets. If you believe that a rating is incorrect,
+                        please submit a PR here to fix the rating (
+                        <a
+                          href="https://github.com/theweaver19/checkmynft"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          https://github.com/theweaver19/checkmynft
+                        </a>
+                        .)
+                      </div>
                     </Grid>
                   </Grid>
                 </Paper>
