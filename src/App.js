@@ -10,7 +10,6 @@ import SupportSection from "./components/SupportSection"
 import ModalForm from "./components/ModalForm"
 import HeroSection from "./components/HeroSection"
 import ResultsSection from "./components/ResultsSection"
-
 // TODO -- check if IPFS has exists on arweave
 // TODO add tutorial to upload to arweave
 
@@ -80,6 +79,7 @@ function App() {
     uriURL: "",
   });
 
+
   // used in hero and results
   const [imageInfo, setImageInfo] = useState(defaultImgState);
   const [nftAddress, setNFTAddress] = useState("");
@@ -95,6 +95,7 @@ function App() {
       ""
   );
   const [arweaveImageUploadedURL, setArweaveImageUploadedURL] = useState("");
+
 
   return (
     <div className="App" style={{}}>

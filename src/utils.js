@@ -1,9 +1,9 @@
 import Arweave from "arweave";
-
 export const ipfsGetEndpoint = "https://ipfs.io/ipfs/";
 export const ipfsLinkEndpoint = "https://ipfs.io/api/v0/object/get?arg=";
 export const arweaveEndpoint = "https://arweave.net";
 
+const CID = require("cids");
 const arweave = Arweave.init();
 
 export const buildQuery = (ipfsHash) => `
@@ -71,12 +71,14 @@ export const deployToIPFS = async (ipfsHash) => {
 };
 
 export const isIPFSCID = (hash) => {
-  if (hash.substring(0, 2) === "Qm") {
+  try {
+    new CID(hash);
     return true;
+  } catch (e) {
+    return false;
   }
-  return false;
 };
-
+ 
 export const getURLFromURI = async (uri) => {
   try {
     if (!uri) {
@@ -87,15 +89,15 @@ export const getURLFromURI = async (uri) => {
     // if protocol other IPFS -- get the ipfs hash
     if (url.protocol === "ipfs:") {
       // ipfs://ipfs/Qm
+      
       let ipfsHash = url.href.replace("ipfs://ipfs/", "");
-
+      
       return [ipfsGetEndpoint + ipfsHash, "ipfs"];
     }
 
     if (url.pathname.includes("ipfs") || url.pathname.includes("Qm")) {
       // /ipfs/QmTtbYLMHaSqkZ7UenwEs9Sri6oUjQgnagktJSnHeWY8iG
       let ipfsHash = url.pathname.replace("/ipfs/", "");
-
       return [ipfsGetEndpoint + ipfsHash, "ipfs"];
     }
 
