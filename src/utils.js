@@ -78,7 +78,7 @@ export const isIPFSCID = (hash) => {
     return false;
   }
 };
- 
+
 export const getURLFromURI = async (uri) => {
   try {
     if (!uri) {
@@ -89,9 +89,9 @@ export const getURLFromURI = async (uri) => {
     // if protocol other IPFS -- get the ipfs hash
     if (url.protocol === "ipfs:") {
       // ipfs://ipfs/Qm
-      
+
       let ipfsHash = url.href.replace("ipfs://ipfs/", "");
-      
+
       return [ipfsGetEndpoint + ipfsHash, "ipfs"];
     }
 
@@ -103,7 +103,7 @@ export const getURLFromURI = async (uri) => {
 
     // otherwise we check if arweave (arweave in the name or arweave.net)
     if (url.hostname === "arweave.net") {
-      return [arweaveEndpoint + url.pathname, "arweave"];
+      return [arweaveEndpoint + "/" + url.pathname, "arweave"];
     }
 
     // otherwise it's a centralized uri
@@ -118,7 +118,7 @@ export const getURLFromURI = async (uri) => {
     try {
       // could be an arweave tx ID, check it
       await arweave.transactions.get(uri);
-      return [arweaveEndpoint + uri, "arweave"];
+      return [arweaveEndpoint + "/" + uri, "arweave"];
     } catch (e) {
       // otherwise we don't know
       return ["", "undefined"];
@@ -134,10 +134,8 @@ export const getURLFromURI = async (uri) => {
 // Good from centralized example (but stored on chain): 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 with tokenURI: 22000042
 
 // Cryptokitties 0x06012c8cf97bead5deae237070f9587f8e7a266d (no reference to the tokenURI on the contract)
-// Hashmasks 0xC2C747E0F7004F9E8817Db2ca4997657a7746928, they don't store any tokenURI on the blockchain (only a hosted webpage with links to)
 export const knownPoor = [
   "0x06012c8cf97bead5deae237070f9587f8e7a266d".toLowerCase(),
-  "0xC2C747E0F7004F9E8817Db2ca4997657a7746928".toLowerCase(),
 ];
 
 export const knownGood = [
@@ -151,7 +149,56 @@ export const knownGood = [
   "0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270".toLowerCase(),
 ];
 
-// Cryptopunks (store the info SHA256 of the image on the contract, image is not necessarily stored in a distributed fashion)
+export const HashmasksAddress = "0xC2C747E0F7004F9E8817Db2ca4997657a7746928";
 
-// TODO check cryptopunks contract!
-// let knownMedium = ["0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb".toLowerCase()];
+export const HashmaskRegistryContract =
+  "0x185c8078285A3dE3EC9a2C203AD12853F03c462D";
+// export const HashmaskABI = [{"inputs":[{"internalType":"uint256","name":"maskId","type":"uint256"}],"name":"getIPFSHashOfMaskId","outputs":[{"internalType":"string","name":"ipfsHash","type":"string"}],"stateMutability":"view","type":"function"}]
+
+export const HashmaskDatastoreAddress =
+  "0x7327DbF06b1FcB0D190533fDD244B52361f0d241";
+
+export const HashmaskDatastoreABI = [
+  {
+    inputs: [{ internalType: "uint256", name: "index", type: "uint256" }],
+    name: "getIPFSHashHexAtIndex",
+    outputs: [{ internalType: "bytes", name: "", type: "bytes" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "index", type: "uint256" }],
+    name: "getTraitBytesAtIndex",
+    outputs: [{ internalType: "bytes3", name: "", type: "bytes3" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "ipfsHashesInHexadecimal",
+    outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "traitBytes",
+    outputs: [{ internalType: "bytes3", name: "", type: "bytes3" }],
+    stateMutability: "view",
+    type: "function",
+  },
+];

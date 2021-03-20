@@ -11,7 +11,9 @@
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "arweave": "^1.10.11",
+    "bs58": "^4.0.1",
     "cids": "^1.1.6",
+    "prettier": "^2.2.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-scripts": "4.0.1",
@@ -23,7 +25,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "pretty": "prettier --write \"./**/*.{ts,tsx,js}\""
   },
   "eslintConfig": {
     "extends": [
