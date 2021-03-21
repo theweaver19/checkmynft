@@ -707,6 +707,7 @@ export default function ResultsSection(props) {
             setNFTAddress("");
             setTokenID("");
             setFetchError("");
+            window.location.href = "/"
           }}
           style={{
             color: "rgba(152, 86, 236, 1)",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import { ERC721ABI } from "../ERC721ABI";
@@ -139,7 +139,7 @@ export default function HeroSection(props) {
     );
   };
 
-  const handleClick = async () => {
+  const handleClick = async (nftAddress, tokenID) => {
     setIsLoading(true);
     try {
       const contract = new web3.eth.Contract(ERC721ABI, nftAddress);
@@ -354,6 +354,7 @@ export default function HeroSection(props) {
           protocol: "Arweave & IPFS",
           uriURL,
         });
+
         setIsLoading(false);
         return;
       }
@@ -377,6 +378,22 @@ export default function HeroSection(props) {
       setIsLoading(false);
     }
   };
+
+  let path = window.location.pathname;
+
+  useEffect(() => {
+    let split = path.split("/");
+    if (split.length === 5 && split[1] === "address" && split[3] === "id") {
+      let address = split[2];
+      validateAddress(address);
+      setNFTAddress(address);
+      let tokenID = split[4];
+      validateTokenID(tokenID);
+      setTokenID(tokenID);
+      handleClick(address, tokenID);
+    }
+    return () => {};
+  }, []);
 
   return (
     <Container>
@@ -512,7 +529,7 @@ export default function HeroSection(props) {
 
               <Button
                 variant="contained"
-                onClick={handleClick}
+                onClick={() => handleClick(nftAddress, tokenID)}
                 className={classes.button}
                 disabled={isButtonEnabled() || isLoading}
                 fullWidth

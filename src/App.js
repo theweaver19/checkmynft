@@ -13,8 +13,6 @@ import ResultsSection from "./components/ResultsSection";
 import FeaturedInSection from "./components/FeaturedInSection";
 import WhatIsMetadataSection from "./components/WhatIsMetadataSection";
 import FAQSection from "./components/FAQSection";
-// TODO -- check if IPFS has exists on arweave
-// TODO add tutorial to upload to arweave
 
 const useStyles = makeStyles((theme) =>
   createStyles({
