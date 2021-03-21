@@ -50,8 +50,8 @@ export default function ResultsSection(props) {
       text: (
         <div>
           Your asset storage strength is strong and couldn’t be better 💚 <br />
-          <br /> This asset has been saved on Arweave which ensures permanent
-          availability of your asset. <br />
+          <br /> This asset has been saved either onchain or on Arweave which
+          ensures permanent availability of your asset. <br />
           <br />
           Wow. Very good NFT. So forever. 🌈 🐕
         </div>
@@ -280,18 +280,26 @@ export default function ResultsSection(props) {
                     Please note that the Check My NFT ratings and site are an
                     MVP.
                   </b>{" "}
-                  Low ratings may be inaccurate if the NFT contract utilizes a
-                  non-standard storage format for the NFT assets. If you believe
-                  that a rating is incorrect, please submit a PR here to fix the
-                  rating (
+                  Ratings may be inaccurate if the NFT contract utilizes a
+                  non-standard storage format for the NFT assets.
+                  <br />
+                  <br />
+                  You should validate any results yourself by checking under
+                  “Read Contract” in Etherscan to see if any other fields relate
+                  to the token metadata (i.e. look for fields such as
+                  tokenIPFShash, getArweaveImgHash, or other similar fields).
+                  <br />
+                  <br />
+                  CheckMyNFT is open source so if you believe that a rating is
+                  incorrect, please submit a PR{" "}
                   <a
                     href="https://github.com/theweaver19/checkmynft"
                     target="_blank"
                     rel="noreferrer"
                   >
-                    https://github.com/theweaver19/checkmynft
-                  </a>
-                  .)
+                    here
+                  </a>{" "}
+                  to fix the rating.
                 </div>
               </Grid>
             </Grid>
@@ -462,9 +470,60 @@ export default function ResultsSection(props) {
                       </a>
                     </TableCell>
                   </TableRow>
+                  <TableRow key={"readcontract"} scope="row">
+                    <TableCell
+                      style={{
+                        color: "rgba(0, 0, 0, 0.25)",
+                        fontFamily: "Poppins",
+                        fontSize: "16px",
+                        border: "none",
+                        maxWidth: "100px",
+                        paddingLeft: "0",
+                        width: "100px",
+                      }}
+                    >
+                      Read Contract:
+                    </TableCell>
+                    <TableCell
+                      style={{
+                        fontFamily: "Poppins",
+                        fontSize: "16px",
+                        border: "none",
+                      }}
+                    >
+                      <a
+                        href={`https://etherscan.io/address/${nftInfo.address}#readContract`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ textDecoration: "none" }}
+                      >
+                        Read contract on etherscan
+                      </a>
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             </TableContainer>
+            <div
+              style={{
+                marginTop: "10px",
+                backgroundColor: "#F1F1F1",
+                border: "1px solid #9F9F9F",
+                borderRadius: "3px",
+                paddingTop: "10px",
+                paddingBottom: "10px",
+                paddingRight: "10px",
+                paddingLeft: "10px",
+                fontFamily: "Poppins",
+                fontSize: "14px",
+                color: "rgba(0, 0, 0, 0.6)",
+              }}
+            >
+              Additional information about this NFT’s metadata storage can be
+              found under “Read Contract” in Etherscan (i.e. look for fields
+              such as tokenIPFShash, getArweaveImgHash, or other similar
+              fields).
+            </div>
           </Paper>
         </Grid>
         <Grid item xs={10} style={{ width: "100%" }}>

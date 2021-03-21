@@ -99,29 +99,15 @@ export default function HowItWorksSection() {
               incentivize anyone for actually storing such data. Arweave is most
               desirable in the ranking as it ensures permanent storage of the
               asset by incentivizing the storers through an upfront endowment
-              payment. <br /> <br /> We also consider whether the asset is
-              linked directly to it’s corresponding ERC-721 token.
-              <br /> For example, in the case of{" "}
-              <a
-                href="https://etherscan.io/token/0xc2c747e0f7004f9e8817db2ca4997657a7746928#readContract"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Hashmasks
-              </a>
-              , the files are stored on IPFS but are not directly linked to the
-              ERC-721 other than through their Provenance website. This results
-              in a poor rating as there is the asset is not tied directly to the
-              token. In contrast, in the case of{" "}
-              <a
-                href="https://etherscan.io/token/0xc6b0b290176aaab958441dcb0c64ad057cbc39a0?a=87#readContract"
-                target="_blank"
-                rel="noreferrer"
-              >
-                PixaWizards
-              </a>
-              , the IPFS URI is linked directly to each token which gives it a
-              Medium strength rating.
+              payment. Storage on Ethereum is also of the highest strength when
+              the assets are stored directly onchain but this is an extremely
+              cost prohibitive method of NFT asset storage and thus uncommon.
+              <br />
+              <br />
+              We also consider whether the asset is linked directly to its
+              corresponding ERC-721 token. In some cases, an NFT’s sole
+              reference to metadata may be via a URL which is very risky since
+              the URL can go offline or be changed at any time.
             </div>
           </Paper>
 
@@ -174,38 +160,6 @@ export default function HowItWorksSection() {
             </div>
           </Paper>
 
-          <Paper
-            elevation={0}
-            style={{
-              border: "1px solid #C4C4C4",
-              padding: "20px",
-              borderRadius: "20px",
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "Poppins",
-                fontWeight: 600,
-                fontSize: "24px",
-                marginBottom: "20px",
-              }}
-            >
-              How to fix an incorrect rating
-            </div>
-
-            <div
-              style={{
-                fontFamily: "Poppins",
-                fontWeight: 400,
-                fontSize: "14px",
-              }}
-            >
-              In the event that an NFT’s asset storage practices have been
-              incorrectly interpreted and rated, the NFT issuer can contact us
-              at <a href="mailto:checkmynft@gmail.com">checkmynft@gmail.com</a>{" "}
-              to clarify and provide additional details.
-            </div>
-          </Paper>
         </Grid>
         <Grid item>
           <Grid container spacing={1}>

@@ -16,6 +16,42 @@ export default function FooterSection() {
       <Grid
         container
         justify="center"
+        direction="column"
+        alignItems="center"
+        alignContent="center"
+      >
+        <Grid item>
+          <div
+            style={{
+              marginTop:"30px",
+              fontFamily: "Poppins",
+              fontWeight: 600,
+              fontSize: "24px",
+              marginBottom: "10px",
+              color:"#9856EC"
+            }}
+          >
+            Help improve CheckMyNFT.com 💡
+          </div>
+        </Grid>
+        <Grid item>
+          <div
+            style={{
+              fontFamily: "Poppins",
+              fontWeight: 400,
+              fontSize: "18px",
+              marginTop: "10px",
+              textAlign: "center",
+            }}
+          >
+            CheckMyNFT is an open-source project. We welcome your contributions
+            to improve upon this project!
+          </div>
+        </Grid>
+      </Grid>
+      <Grid
+        container
+        justify="center"
         alignItems="center"
         style={{ paddingTop: "20px" }}
       >

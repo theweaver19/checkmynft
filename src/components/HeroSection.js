@@ -24,6 +24,25 @@ import Alert from "@material-ui/lab/Alert";
 import Paper from "@material-ui/core/Paper";
 const bs58 = require("bs58");
 
+const createMainError = (address) => (
+  <div>
+    <b>Error: Could not fetch token URI.</b> This token likely uses a
+    non-standard metadata set-up. Review the “Read Contract” fields in Etherscan
+    to see which fields relate to the token metadata (i.e. look for fields such
+    as tokenIPFShash, getArweaveImgHash, or other similar fields).
+    <br />
+    <br />
+    Read this token’s contract{" "}
+    <a
+      href={`https://etherscan.io/address/${address}#readContract`}
+      target="_blank"
+    >
+      here
+    </a>
+    .
+  </div>
+);
+
 export default function HeroSection(props) {
   let {
     classes,
@@ -190,7 +209,9 @@ export default function HeroSection(props) {
           })
           .catch((e) => {
             console.error(e);
-            setFetchError("Could not fetch NFT Image " + imgURI);
+            // setFetchError("Could not fetch NFT Image " + imgURI);
+            setFetchError(createMainError(nftAddress));
+
             setIsLoading(false);
           });
 
@@ -212,7 +233,8 @@ export default function HeroSection(props) {
       let [tokenURI, err] = await tryToGetTokenURI(contract, tokenID);
       if (err !== "") {
         console.error(err);
-        setFetchError("Could not fetch token URI for NFT " + tokenURI);
+        setFetchError(createMainError(nftAddress));
+        // setFetchError("Could not fetch token URI for NFT " + tokenURI);
         setIsLoading(false);
         return;
       }
@@ -224,7 +246,8 @@ export default function HeroSection(props) {
         uriResponse = await fetch(uriURL, { method: "GET" });
       } catch (e) {
         console.error(e);
-        setFetchError("Could not fetch NFT URI " + tokenURI);
+        setFetchError(createMainError(nftAddress));
+        // setFetchError("Could not fetch NFT URI " + tokenURI);
         setIsLoading(false);
         return;
       }
@@ -283,7 +306,9 @@ export default function HeroSection(props) {
         })
         .catch((e) => {
           console.error(e);
-          setFetchError("Could not fetch NFT Image " + imgURI);
+          // setFetchError("Could not fetch NFT Image " + imgURI);
+          setFetchError(createMainError(nftAddress));
+
           setIsLoading(false);
         });
 
@@ -347,7 +372,8 @@ export default function HeroSection(props) {
       setIsLoading(false);
     } catch (e) {
       console.error(e);
-      setFetchError(e.message);
+      // setFetchError(e.message);
+      setFetchError(createMainError(nftAddress));
       setIsLoading(false);
     }
   };
@@ -508,7 +534,7 @@ export default function HeroSection(props) {
                 style={{ marginTop: "10px", width: "100%" }}
               >
                 <Alert variant="outlined" severity="error">
-                  Error: {fetchError}
+                  {fetchError}
                 </Alert>
               </div>
               <div
@@ -529,18 +555,26 @@ export default function HeroSection(props) {
                 <b>
                   Please note that the Check My NFT ratings and site are an MVP.
                 </b>{" "}
-                Low ratings may be inaccurate if the NFT contract utilizes a
-                non-standard storage format for the NFT assets. If you believe
-                that a rating is incorrect, please submit a PR here to fix the
-                rating (
+                Ratings may be inaccurate if the NFT contract utilizes a
+                non-standard storage format for the NFT assets.
+                <br />
+                <br />
+                You should validate any results yourself by checking under “Read
+                Contract” in Etherscan to see if any other fields relate to the
+                token metadata (i.e. look for fields such as tokenIPFShash,
+                getArweaveImgHash, or other similar fields).
+                <br />
+                <br />
+                CheckMyNFT is open source so if you believe that a rating is
+                incorrect, please submit a PR{" "}
                 <a
                   href="https://github.com/theweaver19/checkmynft"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  https://github.com/theweaver19/checkmynft
-                </a>
-                .)
+                  here
+                </a>{" "}
+                to fix the rating.
               </div>
             </div>
           </Paper>

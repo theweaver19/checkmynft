@@ -368,7 +368,11 @@ export default function NFTResourcesSection() {
             textAlign: "center",
           }}
         >
-          Have a resource you want to include here? Email us at{" "}
+          Have a resource you want to include here? Submit a PR{" "}
+          <a href="https://github.com/theweaver19/checkmynft" rel="noreferrer" target="_blank">
+            here
+          </a>{" "}
+          or email us at{" "}
           <a href="mailto:checkmynft@gmail.com">checkmynft@gmail.com</a>.
         </Grid>
       </Grid>

@@ -103,7 +103,7 @@ export const getURLFromURI = async (uri) => {
 
     // otherwise we check if arweave (arweave in the name or arweave.net)
     if (url.hostname === "arweave.net") {
-      return [arweaveEndpoint + "/" + url.pathname, "arweave"];
+      return [arweaveEndpoint + "/" + url.pathname.replace("/", ""), "arweave"];
     }
 
     // otherwise it's a centralized uri
@@ -153,7 +153,6 @@ export const HashmasksAddress = "0xC2C747E0F7004F9E8817Db2ca4997657a7746928";
 
 export const HashmaskRegistryContract =
   "0x185c8078285A3dE3EC9a2C203AD12853F03c462D";
-// export const HashmaskABI = [{"inputs":[{"internalType":"uint256","name":"maskId","type":"uint256"}],"name":"getIPFSHashOfMaskId","outputs":[{"internalType":"string","name":"ipfsHash","type":"string"}],"stateMutability":"view","type":"function"}]
 
 export const HashmaskDatastoreAddress =
   "0x7327DbF06b1FcB0D190533fDD244B52361f0d241";
