@@ -131,7 +131,6 @@ export const getURLFromURI = async (uri) => {
 // Rari Medium example: 0xd07dc4262bcdbf85190c01c996b4c06a461d2430 with tokenURI: 140082
 // Poor from known poor example: 0x06012c8cf97bead5deae237070f9587f8e7a266d
 // Poor from centralized example: 0xBe065d51ef9aE7d4550942Fe9C4E948606260C6C
-// Good from centralized example (but stored on chain): 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 with tokenURI: 22000042
 
 // Cryptokitties 0x06012c8cf97bead5deae237070f9587f8e7a266d (no reference to the tokenURI on the contract)
 export const knownPoor = [
@@ -143,10 +142,6 @@ export const knownGood = [
   "0xF3E778F839934fC819cFA1040AabaCeCBA01e049".toLowerCase(),
   // infiNFTAlpha, store both on Arweave and IPFS 0xD0c402BCBcB5E70157635C41b2810b42Fe592bb0
   "0xD0c402BCBcB5E70157635C41b2810b42Fe592bb0".toLowerCase(),
-  // Artblocks 0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a and 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 (store on chain)
-  "0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a".toLowerCase(),
-  // Artblocks 0x059EDD72Cd353dF5106D2B9cC5ab83a52287aC3a and 0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270 (store on chain)
-  "0xa7d8d9ef8D8Ce8992Df33D8b8CF4Aebabd5bD270".toLowerCase(),
 ];
 
 export const HashmasksAddress = "0xC2C747E0F7004F9E8817Db2ca4997657a7746928";

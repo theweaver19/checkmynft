@@ -425,7 +425,7 @@ export default function ResultsSection(props) {
                         border: "none",
                         paddingLeft: "0",
                         maxWidth: "100px",
-                        width: "100px",
+                        width: "120px",
                       }}
                     >
                       Stored on:
@@ -449,7 +449,7 @@ export default function ResultsSection(props) {
                         border: "none",
                         maxWidth: "100px",
                         paddingLeft: "0",
-                        width: "100px",
+                        width: "120px",
                       }}
                     >
                       URI:
@@ -480,7 +480,7 @@ export default function ResultsSection(props) {
                         border: "none",
                         maxWidth: "100px",
                         paddingLeft: "0",
-                        width: "100px",
+                        width: "150px",
                       }}
                     >
                       Read Contract:

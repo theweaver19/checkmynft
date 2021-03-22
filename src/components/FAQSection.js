@@ -130,14 +130,15 @@ export default function FAQSection() {
               <br />
               <br />
               CheckMyNFT is open source so if you believe that a rating is
-              incorrect, please submit a PR here to fix the rating{" "}
+              incorrect, please submit a PR{" "}
               <a
                 href="https://github.com/theweaver19/checkmynft"
                 target="_blank"
               >
-                https://github.com/theweaver19/checkmynft
+                here
               </a>
-              .
+                {" "}
+              to fix the rating.
             </div>
           </Paper>
 
@@ -187,7 +188,7 @@ export default function FAQSection() {
               refers to this specific NFT.
               <br />
               <br />
-              Contract address: 0xd07dc4262BCDbf85190C01c996b4C06a461d2430
+              Contract address: <a href="https://etherscan.io/address/0xd07dc4262bcdbf85190c01c996b4c06a461d2430" target="_blank">0xd07dc4262BCDbf85190C01c996b4C06a461d2430</a>
               <br />
               <br />
               Token ID: 140082
@@ -267,8 +268,14 @@ export default function FAQSection() {
               contributions to add this support!
               <br />
               <br />
-              Please submit your PR to add support for other blockchains {" "}
-              <a href="https://github.com/theweaver19/checkmynft" target="_blank">here</a>.
+              Please submit your PR to add support for other blockchains{"  "}
+              <a
+                href="https://github.com/theweaver19/checkmynft"
+                target="_blank"
+              >
+                here
+              </a>
+              .
             </div>
           </Paper>
         </Grid>

@@ -63,7 +63,7 @@ export default function WhatIsMetadataSection() {
                 marginBottom: "10px",
               }}
             >
-              NFT metadata is the artwork you may or may not be buying
+              NFT metadata is the artwork you intended to buy
             </div>
 
             <div
@@ -133,7 +133,10 @@ export default function WhatIsMetadataSection() {
                 href="https://ethereum.stackexchange.com/questions/872/what-is-the-cost-to-store-1kb-10kb-100kb-worth-of-data-into-the-ethereum-block#:~:text=It%20costs%20about%200.003%20ETH,USD%20per%20GB%20of%20storage"
                 target="_blank"
               >
-                <i><b>extremely</b></i> expensive
+                <i>
+                  <b>extremely</b>
+                </i>{" "}
+                expensive
               </a>{" "}
               like ~$76,000 USD per GB of storage expensive) or (B) saving your
               metadata on Arweave which is a protocol built specifically for
