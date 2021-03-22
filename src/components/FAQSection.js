@@ -214,7 +214,7 @@ export default function FAQSection() {
                 marginBottom: "10px",
               }}
             >
-              What should I do if I’m worried about how my NFTs data is stored?
+              What should I do if I’m worried about how my NFT data is stored?
             </div>
 
             <div
@@ -230,13 +230,13 @@ export default function FAQSection() {
               <br />
               You should reach out to the artist and/or NFT platform to see if
               they are willing to take any steps to add redundancy to the NFT
-              metadata. Ideally the NFT minting platforms provide options for
+              metadata. Ideally the NFT minting platforms will provide options for
               artists and collectors to permanently backup the created and
               purchased NFTs.
               <br />
               <br />
               In the meantime, you can also individually backup the metadata
-              yourself through checkmynft.com and our use of ipfs2arweave.com.
+              yourself through checkmynft.com via ipfs2arweave.com.
             </div>
           </Paper>
           <Paper

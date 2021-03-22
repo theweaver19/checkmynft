@@ -143,10 +143,10 @@ export default function WhatIsMetadataSection() {
               </a>{" "}
               like ~$76,000 USD per GB of storage expensive) or (B) saving your
               metadata on Arweave which is a protocol built specifically for
-              permanent data storage (this is our preferred method for metadata
+              permanent data storage. Arweave is our preferred method for metadata
               storage and it is extremely cost effective, for example you’d pay
               a one time ~$14 USD per GB as of March 21, 2021 - see their fee
-              calculator for permanent data storage{" "}
+              calculator for permanent data storage.{" "}
               <a
                 href="https://55mcex7dtd5xf4c627v6hadwoq6lgw6jr4oeacqd5k2mazhunejq.arweave.net/71giX-OY-3LwXtfr44B2dDyzW8mPHEAKA-q0wGT0aRM)"
                 target="_blank"

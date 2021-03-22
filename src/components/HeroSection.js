@@ -382,19 +382,19 @@ export default function HeroSection(props) {
 
   let path = window.location.pathname;
 
-  useEffect(() => {
-    let split = path.split("/");
-    if (split.length === 5 && split[1] === "address" && split[3] === "id") {
-      let address = split[2];
-      validateAddress(address);
-      setNFTAddress(address);
-      let tokenID = split[4];
-      validateTokenID(tokenID);
-      setTokenID(tokenID);
-      handleClick(address, tokenID);
-    }
-    return () => {};
-  });
+  // useEffect(() => {
+  //   let split = path.split("/");
+  //   if (split.length === 5 && split[1] === "address" && split[3] === "id") {
+  //     let address = split[2];
+  //     validateAddress(address);
+  //     setNFTAddress(address);
+  //     let tokenID = split[4];
+  //     validateTokenID(tokenID);
+  //     setTokenID(tokenID);
+  //     handleClick(address, tokenID);
+  //   }
+  //   return () => {};
+  // });
 
   return (
     <Container>
