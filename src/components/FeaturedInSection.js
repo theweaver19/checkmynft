@@ -43,6 +43,7 @@ export default function FeaturedInSection() {
               <a
                 href="https://decrypt.co/62037/missing-or-stolen-nfts-how-to-protect"
                 target="_blank"
+                rel="noreferrer"
               >
                 <img src={decrypt} alt="Decrypt" />
               </a>
@@ -51,6 +52,7 @@ export default function FeaturedInSection() {
               <a
                 href="https://news.bitcoin.com/nft-immutability-debate-grows-as-tokenized-tweets-get-deleted-and-nft-images-are-replaced/"
                 target="_blank"
+                rel="noreferrer"
               >
                 <img src={bitcoincom} alt="Bitcoin.com" />
               </a>
@@ -59,6 +61,8 @@ export default function FeaturedInSection() {
               <a
                 href="https://yieldfarmer.substack.com/p/defi-pulse-farmer-32"
                 target="_blank"
+                rel="noreferrer"
+                
               >
                 <img src={defipulse} alt="Defi Pulse" />
               </a>
@@ -67,6 +71,7 @@ export default function FeaturedInSection() {
               <a
                 href="https://arweave.news/nfts-arweave-is-here-for-you/"
                 target="_blank"
+                rel="noreferrer"
               >
                 <img src={arn} alt="Arweave News Network" />
               </a>
@@ -75,6 +80,7 @@ export default function FeaturedInSection() {
               <a
                 href="https://futurism.com/nfts-have-huge-persistence-problem"
                 target="_blank"
+                rel="noreferrer"
               >
                 <img src={futurism} alt="Futurism" />
               </a>
