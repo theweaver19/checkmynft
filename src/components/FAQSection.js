@@ -134,6 +134,7 @@ export default function FAQSection() {
               <a
                 href="https://github.com/theweaver19/checkmynft"
                 target="_blank"
+                rel="noreferrer"
               >
                 here
               </a>
@@ -179,6 +180,7 @@ export default function FAQSection() {
               <a
                 href="https://opensea.io/assets/0xd07dc4262bcdbf85190c01c996b4c06a461d2430/140082"
                 target="_blank"
+                rel="noreferrer"
               >
                 Bored Elon
               </a>{" "}
@@ -188,7 +190,8 @@ export default function FAQSection() {
               refers to this specific NFT.
               <br />
               <br />
-              Contract address: <a href="https://etherscan.io/address/0xd07dc4262bcdbf85190c01c996b4c06a461d2430" target="_blank">0xd07dc4262BCDbf85190C01c996b4C06a461d2430</a>
+              Contract address: <a href="https://etherscan.io/address/0xd07dc4262bcdbf85190c01c996b4c06a461d2430" target="_blank"
+              rel="noreferrer">0xd07dc4262BCDbf85190C01c996b4C06a461d2430</a>
               <br />
               <br />
               Token ID: 140082
@@ -272,6 +275,7 @@ export default function FAQSection() {
               <a
                 href="https://github.com/theweaver19/checkmynft"
                 target="_blank"
+                rel="noreferrer"
               >
                 here
               </a>

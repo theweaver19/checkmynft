@@ -36,6 +36,7 @@ const createMainError = (address) => (
     <a
       href={`https://etherscan.io/address/${address}#readContract`}
       target="_blank"
+      rel="noreferrer"
     >
       here
     </a>
@@ -393,7 +394,7 @@ export default function HeroSection(props) {
       handleClick(address, tokenID);
     }
     return () => {};
-  }, []);
+  });
 
   return (
     <Container>

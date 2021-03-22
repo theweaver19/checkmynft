@@ -83,7 +83,7 @@ export default function WhatIsMetadataSection() {
               artists and developers. It can be as simple as a URL referenced in
               the token contract through to immutable onchain storage on
               Ethereum (see{" "}
-              <a href="https://avastars.io/" target="_blank">
+              <a href="https://avastars.io/" target="_blank" rel="noreferrer">
                 Avastars
               </a>{" "}
               as an example of an NFT with Ethereum onchain storage).
@@ -97,6 +97,7 @@ export default function WhatIsMetadataSection() {
               <a
                 href="https://www.orbitmedia.com/blog/website-lifespan-and-you/#:~:text=The%20average%20website%20lifespan%20is%202%20years%207%20months"
                 target="_blank"
+                rel="noreferrer"
               >
                 31 months
               </a>
@@ -107,6 +108,7 @@ export default function WhatIsMetadataSection() {
               <a
                 href="https://twitter.com/drewpotential/status/1372222290159575046"
                 target="_blank"
+                rel="noreferrer"
               >
                 @drewpotential
               </a>{" "}
@@ -132,6 +134,7 @@ export default function WhatIsMetadataSection() {
               <a
                 href="https://ethereum.stackexchange.com/questions/872/what-is-the-cost-to-store-1kb-10kb-100kb-worth-of-data-into-the-ethereum-block#:~:text=It%20costs%20about%200.003%20ETH,USD%20per%20GB%20of%20storage"
                 target="_blank"
+                rel="noreferrer"
               >
                 <i>
                   <b>extremely</b>
@@ -147,6 +150,7 @@ export default function WhatIsMetadataSection() {
               <a
                 href="https://55mcex7dtd5xf4c627v6hadwoq6lgw6jr4oeacqd5k2mazhunejq.arweave.net/71giX-OY-3LwXtfr44B2dDyzW8mPHEAKA-q0wGT0aRM)"
                 target="_blank"
+                rel="noreferrer"
               >
                 here
               </a>{" "}
