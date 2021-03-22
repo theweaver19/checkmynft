@@ -152,6 +152,8 @@ export default function HeroSection(props) {
         console.error(e);
       }
 
+      window.history.pushState("", "", `?address=${nftAddress}&id=${tokenID}`);
+
       const symbol = await contract.methods.symbol().call();
       const name = await contract.methods.name().call();
 
@@ -380,21 +382,36 @@ export default function HeroSection(props) {
     }
   };
 
-  let path = window.location.pathname;
+  const parseQueryString = () => {
+    var str = window.location.search;
+    var objURL = {};
 
-  // useEffect(() => {
-  //   let split = path.split("/");
-  //   if (split.length === 5 && split[1] === "address" && split[3] === "id") {
-  //     let address = split[2];
-  //     validateAddress(address);
-  //     setNFTAddress(address);
-  //     let tokenID = split[4];
-  //     validateTokenID(tokenID);
-  //     setTokenID(tokenID);
-  //     handleClick(address, tokenID);
-  //   }
-  //   return () => {};
-  // });
+    str.replace(
+      new RegExp("([^?=&]+)(=([^&]*))?", "g"),
+      function ($0, $1, $2, $3) {
+        objURL[$1] = $3;
+      }
+    );
+    return objURL;
+  };
+
+  useEffect(() => {
+    let queryString = parseQueryString();
+    console.log(queryString);
+    let address = queryString["address"];
+    let id = queryString["id"];
+
+    if (address && id) {
+      validateAddress(address);
+      setNFTAddress(address);
+      validateTokenID(id);
+      setTokenID(id);
+      handleClick(address, id);
+    }
+
+    return () => {};
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <Container>
