@@ -3,16 +3,16 @@ import React, { useState } from "react";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import checkMyNFTImage from "./images/checkMyNFT.png";
 import TwitterSection from "./components/TwitterSection";
-import HowItWorksSection from "./components/HowItWorksSection"
-import NFTResourcesSection from "./components/NFTResourcesSection"
-import FooterSection from "./components/FooterSection"
-import SupportSection from "./components/SupportSection"
-import ModalForm from "./components/ModalForm"
-import HeroSection from "./components/HeroSection"
-import ResultsSection from "./components/ResultsSection"
-
-// TODO -- check if IPFS has exists on arweave
-// TODO add tutorial to upload to arweave
+import HowItWorksSection from "./components/HowItWorksSection";
+import NFTResourcesSection from "./components/NFTResourcesSection";
+import FooterSection from "./components/FooterSection";
+import SupportSection from "./components/SupportSection";
+import ModalForm from "./components/ModalForm";
+import HeroSection from "./components/HeroSection";
+import ResultsSection from "./components/ResultsSection";
+import FeaturedInSection from "./components/FeaturedInSection";
+import WhatIsMetadataSection from "./components/WhatIsMetadataSection";
+import FAQSection from "./components/FAQSection";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -64,7 +64,6 @@ let defaultImgState = {
   loading: false,
 };
 
-
 function App() {
   // used in hero results and modal
   const classes = useStyles();
@@ -92,45 +91,46 @@ function App() {
   // used in modal and results
   const [open, setOpen] = useState(false);
   const [arweaveMetadataUploadedURL, setArweaveMetadataUploadedURL] = useState(
-      ""
+    ""
   );
   const [arweaveImageUploadedURL, setArweaveImageUploadedURL] = useState("");
 
   return (
     <div className="App" style={{}}>
-
       <ModalForm
-          componentProps={{
-            classes,
-            open,
-            setOpen,
-            arweaveMetadataUploadedURL,
-            arweaveImageUploadedURL,
-            nftInfo,
-          }}
+        componentProps={{
+          classes,
+          open,
+          setOpen,
+          arweaveMetadataUploadedURL,
+          arweaveImageUploadedURL,
+          nftInfo,
+        }}
       />
 
       {!nftInfo.level ? (
         <React.Fragment>
           <HeroSection
-              componentProps={{
-                classes,
-                imageInfo,
-                setImageInfo,
-                nftAddress,
-                setNFTAddress,
-                tokenID,
-                setTokenID,
-                nftInfo,
-                setNFTInfo,
-                errors,
-                setErrors,
-                fetchError,
-                setFetchError
-              }}
-
+            componentProps={{
+              classes,
+              imageInfo,
+              setImageInfo,
+              nftAddress,
+              setNFTAddress,
+              tokenID,
+              setTokenID,
+              nftInfo,
+              setNFTInfo,
+              errors,
+              setErrors,
+              fetchError,
+              setFetchError,
+            }}
           />
+          <FeaturedInSection />
+          <WhatIsMetadataSection />
           <HowItWorksSection />
+          <FAQSection />
           <TwitterSection />
           <NFTResourcesSection />
           <SupportSection />
@@ -139,20 +139,20 @@ function App() {
       ) : (
         <React.Fragment>
           <ResultsSection
-              componentProps={{
-                classes,
-                imageInfo,
-                setImageInfo,
-                setNFTAddress,
-                setOpen,
-                setArweaveMetadataUploadedURL,
-                setArweaveImageUploadedURL,
-                setTokenID,
-                nftInfo,
-                setNFTInfo,
-                setErrors,
-                setFetchError
-              }}
+            componentProps={{
+              classes,
+              imageInfo,
+              setImageInfo,
+              setNFTAddress,
+              setOpen,
+              setArweaveMetadataUploadedURL,
+              setArweaveImageUploadedURL,
+              setTokenID,
+              nftInfo,
+              setNFTInfo,
+              setErrors,
+              setFetchError,
+            }}
           />
         </React.Fragment>
       )}
