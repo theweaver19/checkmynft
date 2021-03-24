@@ -102,7 +102,7 @@ export const getURLFromURI = async (uri) => {
     }
 
     // otherwise we check if arweave (arweave in the name or arweave.net)
-    if (url.hostname === "arweave.net") {
+    if (url.hostname.includes("arweave")) {
       return [arweaveEndpoint + "/" + url.pathname.replace("/", ""), "arweave"];
     }
 
