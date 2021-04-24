@@ -6,7 +6,6 @@ import {
   deployToIPFS,
   getArweaveIDByCID,
   ipfsGetEndpoint,
-  walkIPFSLinks,
 } from "../utils";
 import checkMyNFT from "../images/logo.png";
 import Paper from "@material-ui/core/Paper";
@@ -118,32 +117,46 @@ export default function ResultsSection(props) {
   const handleUploadToArweaveClick = async () => {
     setOpen(true);
     try {
-      let metadataCID = await walkIPFSLinks(
-        nftInfo.uriURL.replace(ipfsGetEndpoint, "").split("/")[0]
-      );
-      let imageCID = await walkIPFSLinks(
-        imageInfo.imageURIURL.replace(ipfsGetEndpoint, "").split("/")[0]
-      );
-      // upload
-      console.log("deploying metadata");
-      await deployToIPFS(metadataCID);
-      console.log("deploying image");
-      await deployToIPFS(imageCID);
-      // We wait 5 seconds to ensure the graphql endpoint updates
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, 5000);
-      });
-      console.log("getting metadata CID");
-      let arweaveMetadatadaID = await getArweaveIDByCID(metadataCID);
-      setArweaveMetadataUploadedURL(
-        arweaveEndpoint + "/" + arweaveMetadatadaID
-      );
+      let metadataCID = nftInfo.uriURL
+        .replace(ipfsGetEndpoint, "")
+        .split("/")[0];
 
-      console.log("getting image CID");
-      let arweaveImageCID = await getArweaveIDByCID(imageCID);
-      setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
+      let imageCID = imageInfo.imageURIURL
+        .replace(ipfsGetEndpoint, "")
+        .split("/")[0];
+
+      fetch(ipfsGetEndpoint + imageCID, { method: "GET" })
+        .then(async (imageResponse) => {
+          let txt = await imageResponse.text();
+          if (txt.includes("<html>")) {
+            throw new Error("Could not get metadata");
+          }
+
+          // upload
+          console.log("deploying metadata");
+          await deployToIPFS(metadataCID);
+          console.log("deploying image");
+          await deployToIPFS(imageCID);
+          // We wait 5 seconds to ensure the graphql endpoint updates
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve();
+            }, 5000);
+          });
+          console.log("getting metadata CID");
+          let arweaveMetadatadaID = await getArweaveIDByCID(metadataCID);
+          setArweaveMetadataUploadedURL(
+            arweaveEndpoint + "/" + arweaveMetadatadaID
+          );
+
+          console.log("getting image CID");
+          let arweaveImageCID = await getArweaveIDByCID(imageCID);
+          setArweaveImageUploadedURL(arweaveEndpoint + "/" + arweaveImageCID);
+        })
+        .catch((e) => {
+          setOpen(false);
+          console.error(e);
+        });
 
       // await new Promise((resolve) => {
       //   setTimeout(() => {

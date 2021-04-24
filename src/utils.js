@@ -41,18 +41,6 @@ export const getArweaveIDByCID = async (ipfsHash) => {
   return "";
 };
 
-// Example: {"Links":[{"Name":"image.gif","Hash":"QmQ3iNM31YPCCtXphUEL1myFzJ5aX5pJPCpCELFiJAMqiQ","Size":122073}],"Data":"\u0008\u0001"}
-export const walkIPFSLinks = async (ipfsHash) => {
-  let res = await fetch(ipfsLinkEndpoint + ipfsHash, {
-    method: "GET",
-  });
-
-  let ipfsResponse = await res.json();
-  if (ipfsResponse.Links.length > 0) {
-    return walkIPFSLinks(ipfsResponse.Links[0].Hash);
-  }
-  return ipfsHash;
-};
 
 export const deployToIPFS = async (ipfsHash) => {
   const res = await fetch("https://ipfs2arweave.com/permapin/" + ipfsHash, {

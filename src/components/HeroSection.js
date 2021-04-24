@@ -267,15 +267,9 @@ export default function HeroSection(props) {
       if (protocol === "ipfs") {
         let metadataCID = uriURL.replace(ipfsGetEndpoint, "");
         let rootMetadataCID = metadataCID.split("/");
-        if (rootMetadataCID.length !== 0) {
-          rootMetadataCID = await walkIPFSLinks(rootMetadataCID[0]);
-        }
 
         let imageCID = imageURIURL.replace(ipfsGetEndpoint, "");
         let rootImageCID = imageCID.split("/");
-        if (rootImageCID.length !== 0) {
-          rootImageCID = await walkIPFSLinks(rootImageCID[0]);
-        }
 
         try {
           // We check to see if the IPFS hash is stored on arweave
