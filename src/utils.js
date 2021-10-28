@@ -5,6 +5,7 @@ export const arweaveEndpoint = "https://arweave.net";
 
 const CID = require("cids");
 const arweave = Arweave.init();
+const BASE64_JSON_HEADER = "data:application/json;base64,";
 
 export const buildQuery = (ipfsHash) => `
 query {
@@ -72,6 +73,16 @@ export const getURLFromURI = async (uri) => {
     if (!uri) {
       return ["", "undefined"];
     }
+
+    if (uri.indexOf(BASE64_JSON_HEADER) === 0) {
+      debugger;
+      var base64Data = uri.replace(BASE64_JSON_HEADER, "");
+      var jsonData = JSON.parse(atob(base64Data));
+      var imageData = await getURLFromURI(jsonData.image);
+      imageData[1] = "On-chain";
+      return imageData;
+    }
+
     // if correct URI we get the protocol
     let url = new URL(uri);
     // if protocol other IPFS -- get the ipfs hash
@@ -79,6 +90,7 @@ export const getURLFromURI = async (uri) => {
       // ipfs://ipfs/Qm
 
       let ipfsHash = url.href.replace("ipfs://ipfs/", "");
+      ipfsHash = ipfsHash.replace("ipfs://", "");
 
       return [ipfsGetEndpoint + ipfsHash, "ipfs"];
     }

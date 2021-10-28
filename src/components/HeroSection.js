@@ -245,18 +245,25 @@ export default function HeroSection(props) {
       let [uriURL, uriProtocol] = await getURLFromURI(tokenURI);
 
       let uriResponse;
-      try {
-        uriResponse = await fetch(uriURL, { method: "GET" });
-      } catch (e) {
-        console.error(e);
-        setFetchError(createMainError(nftAddress));
-        // setFetchError("Could not fetch NFT URI " + tokenURI);
-        setIsLoading(false);
-        return;
-      }
+      let imgURI;
 
-      let uriInfo = await uriResponse.json();
-      let imgURI = uriInfo.image;
+      if (uriProtocol !== "On-chain") {
+        try {
+          uriResponse = await fetch(uriURL, { method: "GET" });
+        } catch (e) {
+          console.error(e);
+          setFetchError(createMainError(nftAddress));
+          // setFetchError("Could not fetch NFT URI " + tokenURI);
+          setIsLoading(false);
+          return;
+        }
+
+        let uriInfo = await uriResponse.json();
+        imgURI = uriInfo.image;
+      } else {
+        // On-chain metadata can pass the image uri directly
+        imgURI = uriURL;
+      }
 
       let [imageURIURL, protocol] = await getURLFromURI(imgURI);
 
@@ -311,11 +318,12 @@ export default function HeroSection(props) {
 
       let severity = "undefined";
       switch (uriProtocol) {
-        case "ipfs":
-          severity = "medium";
-          break;
+        case "On-chain":
         case "arweave":
           severity = "strong";
+          break;
+        case "ipfs":
+          severity = "medium";
           break;
         case "centralized":
           severity = "poor";
