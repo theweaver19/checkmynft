@@ -1,8 +1,8 @@
 import Arweave from "arweave";
+import chainlistConfig from "./chainlist.json";
 export const ipfsGetEndpoint = "https://ipfs.io/ipfs/";
 export const ipfsLinkEndpoint = "https://ipfs.io/api/v0/object/get?arg=";
 export const arweaveEndpoint = "https://arweave.net";
-
 const CID = require("cids");
 const arweave = Arweave.init();
 
@@ -77,8 +77,9 @@ export const getURLFromURI = async (uri) => {
     // if protocol other IPFS -- get the ipfs hash
     if (url.protocol === "ipfs:") {
       // ipfs://ipfs/Qm
-
       let ipfsHash = url.href.replace("ipfs://ipfs/", "");
+      ipfsHash = ipfsHash.replace("ipfs://", "");
+
 
       return [ipfsGetEndpoint + ipfsHash, "ipfs"];
     }
@@ -113,6 +114,12 @@ export const getURLFromURI = async (uri) => {
     }
   }
 };
+
+export const getConnectedChainInfo = (chainId) => {
+
+return chainlistConfig.find(item => item.chainId == chainId)
+
+}
 
 // ARWEAVE example: 0x97F1482116F6459eD7156f1E4fC76b023C9b4BB3
 // IPFS example: 0xc6b0b290176aaab958441dcb0c64ad057cbc39a0
