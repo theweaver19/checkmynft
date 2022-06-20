@@ -1,4 +1,5 @@
 import "./App.css";
+import Web3 from "web3";
 import React, { useState } from "react";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import checkMyNFTImage from "./images/checkMyNFT.png";
@@ -13,6 +14,9 @@ import ResultsSection from "./components/ResultsSection";
 import FeaturedInSection from "./components/FeaturedInSection";
 import WhatIsMetadataSection from "./components/WhatIsMetadataSection";
 import FAQSection from "./components/FAQSection";
+import {
+  getConnectedChainInfo
+} from "./utils";
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -63,6 +67,52 @@ let defaultImgState = {
   image: checkMyNFTImage,
   loading: false,
 };
+
+
+let wssOptions = {
+  timeout: 30000, // ms
+
+  clientConfig: {
+    // Useful if requests are large
+    maxReceivedFrameSize: 100000000, // bytes - default: 1MiB
+    maxReceivedMessageSize: 100000000, // bytes - default: 8MiB
+
+    // Useful to keep a connection alive
+    keepalive: true,
+    keepaliveInterval: 60000, // ms
+  },
+
+  // Enable auto reconnection
+  reconnect: {
+    auto: true,
+    delay: 5000, // ms
+    maxAttempts: 5,
+    onTimeout: false,
+  },
+};
+
+let web3;
+let connectedChainInfo;
+(() => {
+  if(window.ethereum)
+{
+  connectedChainInfo = getConnectedChainInfo(window.ethereum.networkVersion)
+
+  web3 = new Web3(window.ethereum);
+  console.log("0")
+}
+else
+{
+  connectedChainInfo = getConnectedChainInfo('1')
+  web3 = new Web3(
+    new Web3.providers.WebsocketProvider(
+      "wss://mainnet.infura.io/ws/v3/a30464df239144d0a8eae3f8a426d03e",
+      wssOptions
+    )
+  );
+
+}
+})();
 
 function App() {
   // used in hero results and modal
@@ -125,12 +175,16 @@ function App() {
               setErrors,
               fetchError,
               setFetchError,
+              web3,
+              connectedChainInfo
             }}
           />
           <FeaturedInSection />
           <WhatIsMetadataSection />
           <HowItWorksSection />
-          <FAQSection />
+          <FAQSection componentProps={{
+            connectedChainInfo
+          }}/>
           <TwitterSection />
           <NFTResourcesSection />
           <SupportSection />
@@ -152,6 +206,7 @@ function App() {
               setNFTInfo,
               setErrors,
               setFetchError,
+              connectedChainInfo
             }}
           />
         </React.Fragment>

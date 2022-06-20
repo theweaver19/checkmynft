@@ -2,7 +2,13 @@ import React from "react";
 import { Container, Paper } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 
-export default function FAQSection() {
+export default function FAQSection(props) {
+
+  let {
+    connectedChainInfo
+  } = props.componentProps;
+
+
   return (
     <Container
       style={{
@@ -82,8 +88,7 @@ export default function FAQSection() {
               developers and artist preferences.
               <br />
               <br />
-              In such a case, you should review the “Read Contract” fields in
-              Etherscan to see which fields relate to the token metadata (i.e.
+              In such a case, you should review the “Read Contract” fields in {`${connectedChainInfo.explorers[0].name}`} to see which fields relate to the token metadata (i.e.
               look for fields such as tokenIPFShash, getArweaveImgHash, or other
               similar fields).
             </div>
@@ -123,8 +128,7 @@ export default function FAQSection() {
               in such a case, the metadata may not be linked to the fields we
               assess. Ratings may be inaccurate if the NFT contract utilizes a
               non-standard storage format for the NFT assets. You should
-              validate any results yourself by checking under “Read Contract” in
-              Etherscan to see if any other fields relate to the token metadata
+              validate any results yourself by checking under “Read Contract” in {`${connectedChainInfo.explorers[0].name}`} to see if any other fields relate to the token metadata
               (i.e. look for fields such as tokenIPFShash, getArweaveImgHash, or
               other similar fields).
               <br />
@@ -172,7 +176,7 @@ export default function FAQSection() {
             >
               NFT platforms and marketplaces will typically make this
               information available to you on each NFT’s individual page. You
-              can also find this information on the Etherscan page for your
+              can also find this information on the {`${connectedChainInfo.explorers[0].name}`} page for your
               wallet under ERC-721 tokens.
               <br />
               <br />
@@ -256,7 +260,7 @@ export default function FAQSection() {
                 marginBottom: "10px",
               }}
             >
-              I want support added for NFTs from a different chain.
+              I thought of some changes that can improve this project 
             </div>
 
             <div
@@ -266,12 +270,10 @@ export default function FAQSection() {
                 fontSize: "14px",
               }}
             >
-              Right now, CheckMyNFT only supports ERC-721 NFTs. If you’d like
-              NFTs from another chain to be searchable, we welcome open source
-              contributions to add this support!
+              We welcome open source contributions that improve this project!
               <br />
               <br />
-              Please submit your PR to add support for other blockchains{"  "}
+              Please submit your PRs {"  "}
               <a
                 href="https://github.com/theweaver19/checkmynft"
                 target="_blank"
