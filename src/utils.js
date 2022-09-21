@@ -94,6 +94,11 @@ export const getURLFromURI = async (uri) => {
       return [ipfsGetEndpoint + ipfsHash, "ipfs"];
     }
 
+    if (url.protocol === "data:") {
+
+      return [url.href, "undefined"];
+    }
+
     if (url.pathname.includes("ipfs") || url.pathname.includes("Qm")) {
       // /ipfs/QmTtbYLMHaSqkZ7UenwEs9Sri6oUjQgnagktJSnHeWY8iG
       let ipfsHash = url.pathname.replace("/ipfs/", "");
