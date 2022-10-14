@@ -33,6 +33,7 @@ export default function ResultsSection(props) {
     setArweaveImageUploadedURL,
     setErrors,
     setFetchError,
+    connectedChainInfo
   } = props.componentProps;
 
   let defaultErrors = {
@@ -299,7 +300,7 @@ export default function ResultsSection(props) {
                   <br />
                   <br />
                   You should validate any results yourself by checking under
-                  “Read Contract” in Etherscan to see if any other fields relate
+                  “Read Contract” in {`${connectedChainInfo.explorers[0].name}`} to see if any other fields relate
                   to the token metadata (i.e. look for fields such as
                   tokenIPFShash, getArweaveImgHash, or other similar fields).
                   <br />
@@ -506,12 +507,12 @@ export default function ResultsSection(props) {
                       }}
                     >
                       <a
-                        href={`https://etherscan.io/address/${nftInfo.address}#readContract`}
+                        href={`${connectedChainInfo.explorers[0].url}/address/${nftInfo.address}#readContract`}
                         target="_blank"
                         rel="noreferrer"
                         style={{ textDecoration: "none" }}
                       >
-                        Read contract on etherscan
+                        Read contract on {`${connectedChainInfo.explorers[0].name}`}
                       </a>
                     </TableCell>
                   </TableRow>
@@ -534,7 +535,7 @@ export default function ResultsSection(props) {
               }}
             >
               Additional information about this NFT’s metadata storage can be
-              found under “Read Contract” in Etherscan (i.e. look for fields
+              found under “Read Contract” in {`${connectedChainInfo.explorers[0].name}`} (i.e. look for fields
               such as tokenIPFShash, getArweaveImgHash, or other similar
               fields).
             </div>
@@ -636,7 +637,7 @@ export default function ResultsSection(props) {
                       }}
                     >
                       <a
-                        href={`https://etherscan.io/address/${nftInfo.address}`}
+                        href={`${connectedChainInfo.explorers[0].url}/address/${nftInfo.address}`}
                         target="_blank"
                         rel="noreferrer"
                         style={{ textDecoration: "none" }}
@@ -667,7 +668,7 @@ export default function ResultsSection(props) {
                       }}
                     >
                       <a
-                        href={`https://etherscan.io/address/${nftInfo.address}#readContract`}
+                        href={`${connectedChainInfo.explorers[0].url}/address/${nftInfo.address}#readContract`}
                         target="_blank"
                         rel="noreferrer"
                         style={{ textDecoration: "none" }}
@@ -698,7 +699,7 @@ export default function ResultsSection(props) {
                       }}
                     >
                       <a
-                        href={`https://etherscan.io/address/${nftInfo.owner}`}
+                        href={`${connectedChainInfo.explorers[0].url}/address/${nftInfo.owner}`}
                         target="_blank"
                         rel="noreferrer"
                         style={{ textDecoration: "none" }}

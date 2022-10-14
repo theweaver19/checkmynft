@@ -15,7 +15,6 @@ import {
   HashmaskDatastoreAddress,
   deployToIPFS,
 } from "../utils";
-import Web3 from "web3";
 import checkMyNFT from "../images/logo.png";
 import eth from "../images/eth.png";
 import TextField from "@material-ui/core/TextField";
@@ -24,17 +23,17 @@ import Alert from "@material-ui/lab/Alert";
 import Paper from "@material-ui/core/Paper";
 const bs58 = require("bs58");
 
-const createMainError = (address) => (
+const createMainError = (address,connectedChainInfo) => (
   <div>
     <b>Error: Could not fetch token URI.</b> This token likely uses a
-    non-standard metadata set-up. Review the “Read Contract” fields in Etherscan
+    non-standard metadata set-up. Review the “Read Contract” fields in {`${connectedChainInfo.explorers[0].name} `}
     to see which fields relate to the token metadata (i.e. look for fields such
     as tokenIPFShash, getArweaveImgHash, or other similar fields).
     <br />
     <br />
     Read this token’s contract{" "}
     <a
-      href={`https://etherscan.io/address/${address}#readContract`}
+      href={`${connectedChainInfo.explorers[0].url}/address/${address}#readContract`}
       target="_blank"
       rel="noreferrer"
     >
@@ -58,29 +57,9 @@ export default function HeroSection(props) {
     setErrors,
     fetchError,
     setFetchError,
+    web3,
+    connectedChainInfo
   } = props.componentProps;
-
-  let wssOptions = {
-    timeout: 30000, // ms
-
-    clientConfig: {
-      // Useful if requests are large
-      maxReceivedFrameSize: 100000000, // bytes - default: 1MiB
-      maxReceivedMessageSize: 100000000, // bytes - default: 8MiB
-
-      // Useful to keep a connection alive
-      keepalive: true,
-      keepaliveInterval: 60000, // ms
-    },
-
-    // Enable auto reconnection
-    reconnect: {
-      auto: true,
-      delay: 5000, // ms
-      maxAttempts: 5,
-      onTimeout: false,
-    },
-  };
 
   const [touched, setTouched] = useState({
     nftAddress: false,
@@ -88,13 +67,6 @@ export default function HeroSection(props) {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-
-  const web3 = new Web3(
-    new Web3.providers.WebsocketProvider(
-      "wss://mainnet.infura.io/ws/v3/a30464df239144d0a8eae3f8a426d03e",
-      wssOptions
-    )
-  );
 
   const validateTokenID = (tokenID) => {
     if (+tokenID < 0) {
@@ -213,7 +185,7 @@ export default function HeroSection(props) {
           .catch((e) => {
             console.error(e);
             // setFetchError("Could not fetch NFT Image " + imgURI);
-            setFetchError(createMainError(nftAddress));
+            setFetchError(createMainError(nftAddress,connectedChainInfo));
 
             setIsLoading(false);
           });
@@ -236,7 +208,7 @@ export default function HeroSection(props) {
       let [tokenURI, err] = await tryToGetTokenURI(contract, tokenID);
       if (err !== "") {
         console.error(err);
-        setFetchError(createMainError(nftAddress));
+        setFetchError(createMainError(nftAddress,connectedChainInfo));
         // setFetchError("Could not fetch token URI for NFT " + tokenURI);
         setIsLoading(false);
         return;
@@ -245,18 +217,34 @@ export default function HeroSection(props) {
       let [uriURL, uriProtocol] = await getURLFromURI(tokenURI);
 
       let uriResponse;
+      let imgURI;
       try {
         uriResponse = await fetch(uriURL, { method: "GET" });
       } catch (e) {
         console.error(e);
-        setFetchError(createMainError(nftAddress));
+        setFetchError(createMainError(nftAddress,connectedChainInfo));
         // setFetchError("Could not fetch NFT URI " + tokenURI);
         setIsLoading(false);
         return;
       }
 
-      let uriInfo = await uriResponse.json();
-      let imgURI = uriInfo.image;
+      if (uriProtocol !== "On-chain") {
+        try {
+          uriResponse = await fetch(uriURL, { method: "GET" });
+        } catch (e) {
+          console.error(e);
+          setFetchError(createMainError(nftAddress));
+          // setFetchError("Could not fetch NFT URI " + tokenURI);
+          setIsLoading(false);
+          return;
+        }
+
+        let uriInfo = await uriResponse.json();
+        imgURI = uriInfo.image;
+      } else {
+        // On-chain metadata can pass the image uri directly
+        imgURI = uriURL;
+      }
 
       let [imageURIURL, protocol] = await getURLFromURI(imgURI);
 
@@ -304,18 +292,19 @@ export default function HeroSection(props) {
         .catch((e) => {
           console.error(e);
           // setFetchError("Could not fetch NFT Image " + imgURI);
-          setFetchError(createMainError(nftAddress));
+          setFetchError(createMainError(nftAddress,connectedChainInfo));
 
           setIsLoading(false);
         });
 
       let severity = "undefined";
       switch (uriProtocol) {
-        case "ipfs":
-          severity = "medium";
-          break;
+        case "On-chain":
         case "arweave":
           severity = "strong";
+          break;
+        case "ipfs":
+          severity = "medium";
           break;
         case "centralized":
           severity = "poor";
@@ -371,7 +360,7 @@ export default function HeroSection(props) {
     } catch (e) {
       console.error(e);
       // setFetchError(e.message);
-      setFetchError(createMainError(nftAddress));
+      setFetchError(createMainError(nftAddress,connectedChainInfo));
       setIsLoading(false);
     }
   };
@@ -501,7 +490,7 @@ export default function HeroSection(props) {
                 }}
               >
                 <img src={eth} alt="ethereum" />
-                Supporting Ethereum NFTs (ERC-721 Compatible) only at this time.
+                Supporting all EVM compatible chain NFTs (ERC-721 Compatible) only at this time.
               </div>
               <TextField
                 fullWidth
@@ -589,7 +578,7 @@ export default function HeroSection(props) {
                 <br />
                 <br />
                 You should validate any results yourself by checking under “Read
-                Contract” in Etherscan to see if any other fields relate to the
+                Contract” in {`${connectedChainInfo.explorers[0].name}`} to see if any other fields relate to the
                 token metadata (i.e. look for fields such as tokenIPFShash,
                 getArweaveImgHash, or other similar fields).
                 <br />
